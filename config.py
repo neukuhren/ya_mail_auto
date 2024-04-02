@@ -17,7 +17,7 @@ DICT_WORK_MODES = {
     5 : 'смена паролей для активных аккаунтов',
     6 : 'удаление недействующих аккаунтов из (.xlsx) файла',
     7 : 'получение паролей приложения почта для активных аккаунтов',
-    8 : 'NEW Экспорт mail.ru аккаунтов: combined_mailru.txt --> combined_mailru.xlsx',
+    8 : 'Экспорт mail.ru аккаунтов: combined_mailru.txt --> combined_mailru.xlsx',
     9 : 'NEW Проверка аккаунтов из combined_mailru.xlsx',
     10 : 'NEW рассылка сообщений по ссылкам auto.ru из файла lnk.xslx [MAIL аккаунты]',
 }
@@ -36,8 +36,7 @@ LIST_WITH_STATUS_ACC = [
     'adv captcha',
     '2FA',
     'ok_psw_changed',
-    'only mail ok',
-]
+    ]
 """Список определяет статусы аккаунтов, которые могут присваиваться при проверке."""
 
 LIST_WITH_STATUS_MSG = [
@@ -62,11 +61,13 @@ LIST_WITH_COLUMNS_COMBINED = [
     'Login',
     'Password',
     'Answer',
-    'Status',
-    'Cookies',
-    'Psw_mailru_for_app',
+    'Status_yandex',
+    'Cookies_yandex',
+    'Status_mailru',
     'Cookies_mailru',
     'Dzen_status',
+    'First_name',
+    'Last_name',
 ]
 """Список определяет в каком порядке должны идти столбцы в таблице. Не изменять!
 При необходимости изменения необходимо поменять алгоритм в функции экспорта из txt"""

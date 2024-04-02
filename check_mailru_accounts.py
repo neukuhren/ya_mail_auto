@@ -82,7 +82,6 @@ def get_web_page_in_browser(url: str) -> None:
         pass
 
 
-
 def find_field_by_css_and_paste_text(field_css: str, text_for_field: str, press_key_enter=False) -> None:
     """Проверяет есть ли поле c переданным css и вставляет переданное текстовое значение.
     """
@@ -301,7 +300,7 @@ def find_label_account_not_exist() -> bool:
         # Логин введен некорректно или удален
         if el_find_label_account_not_exist.text == 'Такой аккаунт не зарегистрирован':
             logger.info(f'На странице было найдено поле "Такой аккаунт не зарегистрирован"')
-            dict_with_data['Status'] = 'invalid'
+            dict_with_data["Status_mailru"] = 'invalid'
             return True
     except:
         logger.debug(f'Метка "Такой аккаунт не зарегистрирован" не найдена')
@@ -346,10 +345,9 @@ def find_label_invalid_login(driver :object) -> None:
         el_field_invalid_login = driver.find_element(By.ID, 'field:input-login:hint')
         # Логин введен некорректно или удален
         logger.info(f'На странице было найдено поле неверный логин')
-        dict_with_data['Status'] = 'invalid'
+        dict_with_data["Status_yandex"] = 'invalid'
     except:
         logger.debug(f'Поле неверный логин не найдено')
-
 
 
 def find_el_first_email_and_click(driver :object) -> None:
@@ -376,7 +374,7 @@ def find_field_invalid_password(driver :object) -> None:
     try:
         el_field_invalid_passwd = driver.find_element(By.ID, 'field:input-passwd:hint')
         logger.info(f'На странице было поле неверный пароль')
-        dict_with_data['Status'] = 'invalid'
+        dict_with_data["Status_mailru"] = 'invalid'
     except:
         logger.debug(f'Поле неверный пароль не найдено')
 
@@ -390,7 +388,7 @@ def find_image2fa_entertype(el_class='Image2FA-enterType') -> bool:
         el_image2fa_entertype = driver.find_element(By.CLASS_NAME, el_class)
         if el_image2fa_entertype:
             logger.info(f'Элемент Способы входа Ключом {el_class} найден.')
-            dict_with_data['Status'] = '2FA'
+            dict_with_data["Status_yandex"] = '2FA'
             return True
     except:
         logger.debug(f'Элемент Способы входа Ключом {el_class} не найден.')
@@ -575,7 +573,7 @@ def find_magicpromopage_title_qr_code(driver :object, el_class='MagicPromoPage-t
         el_magicpromopage_title = driver.find_element(By.CLASS_NAME, el_class)
         if el_magicpromopage_title.text == 'Откройте приложение Яндекс.Ключ и наведите камеру на QR-код':
             logger.info(f'Элемент MagicPromoPage-title {el_class} найден.')
-            dict_with_data['Status'] = 'qr code'
+            dict_with_data["Status_mailru"] = 'qr code'
     except:
         logger.debug(f'Элемент MagicPromoPage-title {el_class} не найден.')
 
@@ -589,7 +587,7 @@ def find_advanced_captcha(driver :object, el_class='AdvancedCaptcha-SilhouetteTa
         el_advanced_сaptcha = driver.find_element(By.CLASS_NAME, el_class)
         if el_advanced_сaptcha:
             logger.info(f'Элемент advanced каптча {el_class} найден.')
-            dict_with_data['Status'] = 'adv captcha'
+            dict_with_data["Status_mailru"] = 'adv captcha'
             pause = 10
             logger.info(f'Ждем {pause} сек для автоматического решения через расширение браузера.')
             sleep(pause)
@@ -730,61 +728,12 @@ def find_and_click_btn_sent_mail_for_login(driver :object) -> None:
         logger.debug(f'Кнопки отправить письмо для входа не было, либо она не была найдена.')
 
 
-def auth_yandex_with_mailru_acc(driver :object):
-    """Авторизация на passport.yandex.ru. Изменяет словарь с данными аккаунта."""
+def check_status_auth_yandex(driver :object) -> bool:
+    """Проверяет статус авторизация на passport.yandex.ru. Изменяет словарь с данными аккаунта."""
     logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
-    get_web_page_in_browser(url=URL_YA_AUTH)
-    sleep(2)
-    # find_and_click_btn_more(driver=driver)
-    # sleep(1)
-    # find_and_click_btn_log_in_another_way(driver=driver)
-    find_and_click_captcha_iam_not_robot(driver=driver)
-    sleep(0.5)
-    find_and_click_btn_close_window()
-    sleep(0.5)
-    find_add_favorite_and_click_btn_close_window()
-    sleep(0.5)
-    # find_and_click_btn_signin()  # AuthSocialBlock-provider  Для активации текстового поля email
-    find_field_and_insert_email_text_on_page_yandex(dict_with_data['Login'])
-    sleep(randint(1, 3))
-    # Провериить если надпись Письмо со ссылкой придёт на почту honwerve@mail.ru. Откройте его на любом устройстве
-    # Нажать кнопку отправить письмо для входа
-    # Открыть в новой вкладке https://e.mail.ru/inbox/ 
-    # Достать пароль из письма
-
-    # find_and_click_btn_with_mailru()
-    # sleep(randint(5, 10))
-    # Ожидаем загрузку нового окна разрешить доступ через mail.ru
-    # Setup wait for later
-    # wait = WebDriverWait(driver, 10)
-    # Store the ID of the original window
-    original_window = driver.current_window_handle
-    # wait.until(EC.number_of_windows_to_be(2))
-    # Loop through until we find a new window handle
-    for window_handle in driver.window_handles:
-        if window_handle != original_window:
-            driver.switch_to.window(window_handle)
-            break
-    # Wait for the new tab to finish loading content
-    # wait.until(EC.title_is("SeleniumHQ Browser Automation"))
-    # Если вход возможен только по коду из смс
-    if check_entry_only_email_code():
-        dict_with_data['Status'] = 'only mail ok'
-    # elif check_entry_only_sms():
-    #     dict_with_data['Status'] = 'only mail ok'
-    # elif check_need_recovery():
-    #     dict_with_data['Status'] = 'only mail ok'
-    else:
-        # Нажимаем разрешить ui-button-main
-        find_and_click_btn_accept_from_mailru()
-        sleep(randint(1, 3))
-        # Loop through until we find a new window handle
-        for window_handle in driver.window_handles:
-            if window_handle != None:
-                driver.switch_to.window(window_handle)
-                break
-        find_and_click_btn_next()
-        sleep(randint(1, 3))
+    try:
+        get_web_page_in_browser(url=URL_YA_ID)
+        sleep(2)
         cur_avatar_obj = None
         # print('Проверяю аватар')
         el_avatar1 = check_avatar1_yandex_on_page_and_click()  # аватар 1 вида
@@ -793,7 +742,7 @@ def auth_yandex_with_mailru_acc(driver :object):
         el_avatar4 = check_avatar4_on_page_and_click()  # аватар 4 вида
         if el_avatar1 or el_avatar2 or el_avatar3 or el_avatar4:
             logger.info(f'Вход выполнен успешно')
-            dict_with_data['Status'] = 'ok'
+            dict_with_data["Status_yandex"] = 'ok'
             if el_avatar1: 
                 cur_avatar_obj = el_avatar1
             elif el_avatar2:
@@ -806,16 +755,13 @@ def auth_yandex_with_mailru_acc(driver :object):
                 new_psw = navigate_menu_and_change_password(el_avatar=cur_avatar_obj, dict_with_data=dict_with_data)
                 if new_psw:
                     dict_with_data['Password'] = new_psw
-            # получаем cookies yandex.ru
-            current_cookies = driver.get_cookies()
-            # print(f'\n\n{current_cookies}\n\n')
-            # сохраняем cookies yandex.ru в словарь
-            dict_with_data['Cookies'] = current_cookies
-            #получаем и сохраняем куки mail с помощью pickle
-            pickle.dump(driver.get_cookies(), open(f"cookies_mailru/{dict_with_data['Login']}.pkl", "wb"))
-        else:
-            logger.error(f'Авторизация в yandex не выполнена')
-            dict_with_data['Status'] = 'only mail ok'
+            return True
+            # Получаем и сохраняем куки яндекса в отдельной функции
+    except:
+        logger.error(f'Авторизация в yandex не выполнена')
+        dict_with_data["Status_yandex"] = 'no status'
+        return False
+    
 
 
 def find_window_enable_push_in_browser_and_click_cancel(driver :object) -> None:
@@ -922,7 +868,7 @@ def check_account_mailru():
         sleep(randint(1, 3))
         account_not_exist = find_label_account_not_exist()
         if account_not_exist:
-            dict_with_data['Status'] = 'not exist'
+            dict_with_data["Status_mailru"] = 'not exist'
         else:
             find_field_and_insert_passwd_text(passwd=dict_with_data['Password'])
             sleep(3)
@@ -950,10 +896,10 @@ def check_account_mailru():
             cur_avatar_obj = None
             # Если вход возможен только по коду из смс
             if check_entry_only_sms(driver=driver):
-                dict_with_data['Status'] = 'sms'
+                dict_with_data["Status_mailru"] = 'sms'
             
             elif check_need_recovery(driver=driver):
-                dict_with_data['Status'] = 'recovery'
+                dict_with_data["Status_mailru"] = 'recovery'
 
             else:
                 # print('Проверяю аватар')
@@ -964,7 +910,7 @@ def check_account_mailru():
                 el_avatar5 = check_avatar5_on_page_and_click(driver=driver)  # аватар 4 вида
                 if el_avatar1 or el_avatar2 or el_avatar3 or el_avatar4 or el_avatar5:
                     logger.info(f'Вход в mail.ru выполнен успешно')
-                    dict_with_data['Status'] = 'ok'
+                    dict_with_data["Status_mailru"] = 'ok'
 
                     # Сохраняем объект текущего аватара (если в дальнейшем понадобится для клика по нему)
                     if el_avatar1: 
@@ -979,27 +925,28 @@ def check_account_mailru():
                         cur_avatar_obj = el_avatar5
                     
                     find_window_add_phone_number_and_click_cancel(driver=driver)
-
-                    # получаем cookies
-                    current_cookies = driver.get_cookies()
-                    # logger.debug(f'\n\n{current_cookies}\n\n')
-                    # сохраняем cookies в словарь
-                    dict_with_data["Cookies_mailru"] = current_cookies
-                    #получаем и сохраняем куки с помощью pickle
-                    pickle.dump(driver.get_cookies(), open(f"cookies_mailru/{dict_with_data['Login']}.pkl", "wb"))
-                    # Получаем и сохраняем куки в json
-                    with open(f'cookies_mailru/{dict_with_data["Login"]}.json', 'w') as file:
-                        json.dump(current_cookies, file)
+                    
+                    save_pkl_json_excel_cookies(driver=driver, url='https://mail.ru/')
+                    # # получаем cookies
+                    # current_cookies = driver.get_cookies()
+                    # # logger.debug(f'\n\n{current_cookies}\n\n')
+                    # # сохраняем cookies в словарь
+                    # dict_with_data["Cookies_mailru"] = current_cookies
+                    # #получаем и сохраняем куки с помощью pickle
+                    # pickle.dump(driver.get_cookies(), open(f"cookies_mailru/{dict_with_data['Login']}.pkl", "wb"))
+                    # # Получаем и сохраняем куки в json
+                    # with open(f'cookies_mailru/{dict_with_data["Login"]}.json', 'w') as file:
+                    #     json.dump(current_cookies, file)
 
                     if PARAM_DICT['PARAMETER_CHANGE_PASSWORD_USE_PSW'] == 'True':
                         new_psw = navigate_menu_and_change_password(el_avatar=cur_avatar_obj, dict_with_data=dict_with_data)
                         if new_psw:
                             dict_with_data['Password'] = new_psw
                 else:
-                    dict_with_data['Status'] = 'unknow'
+                    dict_with_data["Status_mailru"] = 'unknow'
 
             # Если статус аккаунта ок, то получим личные данные из профиля (Имя и Фамилия)
-            if dict_with_data['Status'] == 'ok':
+            if dict_with_data["Status_mailru"] == 'ok':
                 if  PARAM_DICT["USED_NAME_FROM_MAILRU"] == 'True':
                     try:
                         get_web_page_in_browser(url='https://id.mail.ru/profile?utm_campaign=mailid&utm_medium=ph&from=headline')
@@ -1048,17 +995,17 @@ def create_on_mailru_psw_for_external_apps(driver :object) -> None:
     sleep(1)
     hack_recaptcha_used_audio_file(driver=driver)
     
-
-    # получаем cookies
-    current_cookies = driver.get_cookies()
-    # logger.debug(f'\n\n{current_cookies}\n\n')
-    # сохраняем cookies в словарь
-    dict_with_data['Cookies'] = current_cookies
-    #получаем и сохраняем куки с помощью pickle
-    pickle.dump(driver.get_cookies(), open(f"cookies_mailru/{dict_with_data['Login']}.pkl", "wb"))
-    # Получаем и сохраняем куки в json
-    with open(f'cookies_mailru/{dict_with_data["Login"]}.json', 'w') as file:
-        json.dump(current_cookies, file)
+    save_pkl_json_excel_cookies(driver=driver, url='https://mail.ru/')
+    # # получаем cookies
+    # current_cookies = driver.get_cookies()
+    # # logger.debug(f'\n\n{current_cookies}\n\n')
+    # # сохраняем cookies в словарь
+    # dict_with_data['Cookies_mailru'] = current_cookies
+    # #получаем и сохраняем куки с помощью pickle
+    # pickle.dump(driver.get_cookies(), open(f"cookies_mailru/{dict_with_data['Login']}.pkl", "wb"))
+    # # Получаем и сохраняем куки в json
+    # with open(f'cookies_mailru/{dict_with_data["Login"]}.json', 'w') as file:
+    #     json.dump(current_cookies, file)
 # print(user_data)
 # forward_to_next_account = input('Перейти к следующему аккаунту? (y/n): ')
 # if forward_to_next_account == 'y':
@@ -1082,12 +1029,41 @@ def click_smart_captcha():
             text_captcha = driver.find_element(By.CSS_SELECTOR, "#advanced-captcha-form > div > div > div.AdvancedCaptcha-SilhouetteTask > span")
             if text_captcha:
                 logger.info('Обнаружена smart captcha - решить не удется')
-                dict_with_data["Status"] = 'no yandex status'
+                dict_with_data["Status_yandex"] = 'no status'
         except:
             logger.info('Вероятно, smart captcha решена успешно. Ожидание загрузки страницы...')
             sleep(10)
     except:
         logger.debug('Возможно, smart captcha не найдена')
+
+
+def save_pkl_json_excel_cookies(driver, url):
+    """Сохраняет все куки"""
+    logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
+    driver.switch_to.window(driver.window_handles[-1])
+    sleep(1)
+    # Сохранить куки
+    get_web_page_in_browser(url=url)
+    sleep(5)
+    # получаем cookies
+    current_cookies = driver.get_cookies()
+    # logger.debug(f'\n\n{current_cookies}\n\n')
+    # получаем и сохраняем куки с помощью pickle
+    folder =''
+    if 'yandex' in url:
+        # сохраняем cookies в словарь
+        dict_with_data["Cookies_yandex"] = current_cookies
+        folder = 'cookies_yandex'
+    if 'mail' in url:
+        # сохраняем cookies в словарь
+        dict_with_data["Cookies_mailru"] = current_cookies
+        folder = 'cookies_mailru'
+    pickle.dump(driver.get_cookies(), open(f'{folder}/{dict_with_data["Login"]}.pkl', "wb"))
+    sleep(1)
+    # Получаем и сохраняем куки в json
+    with open(f'{folder}/{dict_with_data["Login"]}.json', 'w') as file:
+        json.dump(current_cookies, file)
+        logger.info(f'Cookies аккаунта {dict_with_data["Login"]} успешно сохранены в {folder}')
 
 
 def auth_on_yandexru_with_email_verify(driver :object) -> None:
@@ -1107,13 +1083,13 @@ def auth_on_yandexru_with_email_verify(driver :object) -> None:
     try:
         find_field_and_insert_email_text_on_page_yandex(login_email=dict_with_data["Login"])
     except:
-        dict_with_data["Status"] = 'no yandex status'
+        dict_with_data["Status_yandex"] = 'no status'
         return
-    sleep(2)
+    sleep(1)
     find_and_click_captcha_iam_not_robot(driver=driver)
     sleep(5)
     hack_recaptcha_used_audio_file(driver=driver)
-    sleep(3)
+    sleep(2)
     find_field_by_css_and_paste_text(field_css='#passp-field-passwd',
                                      text_for_field=dict_with_data["Password"],
                                      press_key_enter=True)
@@ -1124,7 +1100,7 @@ def auth_on_yandexru_with_email_verify(driver :object) -> None:
         driver.find_element(By.CSS_SELECTOR, '#root > div > div.passp-page > div.passp-flex-wrapper > div > div > div.passp-auth-content > div.passp-route-forward > div > div > div > div:nth-child(5) > button').click()
     except:
         pass
-    sleep(5)
+    sleep(3)
 
     # Проверяем - авторизация по коду из письма?
     is_auth_with_code_from_email = None
@@ -1135,16 +1111,17 @@ def auth_on_yandexru_with_email_verify(driver :object) -> None:
         pass
     # Switch back to the first tab
     driver.switch_to.window(driver.window_handles[0])
-    timer_in_consol(10)
+    timer_in_consol(3)
     driver.refresh()
     # driver.find_element_by_tag_name('body').send_keys(Keys.COMMAND + 'r')
-    sleep(5)
+    sleep(3)
     find_el_first_email_and_click(driver=driver)
-    sleep(4)
+    sleep(3)
     if is_auth_with_code_from_email:  # если авторизация по коду из письма
         secret_code = None
+        # По селектору обычно не находится, тк меняется номер body
         try:
-            el_code = driver.find_element(By.CSS_SELECTOR, '#style_17101535751861182055_BODY > div > table > tbody > tr > td > table:nth-child(2) > tbody > tr > td > p:nth-child(3)')
+            el_code = driver.find_element(By.CSS_SELECTOR, '#style_17115248880402105534_BODY > div > table > tbody > tr > td > table:nth-child(2) > tbody > tr > td > p:nth-child(3) > b')
             if int(el_code.text) in range(0, 1000000):
                 secret_code = el_code.text
                 logger.info(f'Код найден по css_selector. Значение {secret_code}')
@@ -1174,13 +1151,6 @@ def auth_on_yandexru_with_email_verify(driver :object) -> None:
                     el_field.send_keys(secret_code, Keys.ENTER)
                 except:
                     logger.error(f'Ошибка при заполнении поля код')
-
-
-
-
-
-
-
                     # !!!!!!!!!!!!!!!!
                 # find_field_by_css_and_paste_text(field_css=)
             except:
@@ -1204,12 +1174,15 @@ def auth_on_yandexru_with_email_verify(driver :object) -> None:
         driver.find_element(By.CSS_SELECTOR, "#root > div > div.passp-page > div.passp-flex-wrapper > div > div > div.passp-auth-content > div:nth-child(3) > div > div > div.auth_letter_action-buttons > div:nth-child(2) > button").click()
         sleep(2)
     driver.switch_to.window(driver.window_handles[-1])
-    sleep(2)
+    sleep(1)
+
+    # Пробуем авторизоваться в яндекс (при необходимости вводим имя, фамилию, пароль)
     try:
         # Если имя и фамилия не были получены с личных данных mail.ru
         # проверим по наличию ключа в словаре
         if ("first_name" in dict_with_data) and ("last_name" in dict_with_data):
-            pass
+            first_name = dict_with_data['first_name']
+            last_name = dict_with_data["last_name"]
         else:
             # то сгенерировать русские имя и фамилию
             from russian_names import RussianNames
@@ -1228,15 +1201,15 @@ def auth_on_yandexru_with_email_verify(driver :object) -> None:
                                         # dict_with_data['Login'].split('@')[0][::-1]
                                         text_for_field=last_name,
                                         press_key_enter=True)
-        sleep(2)
+        sleep(1)
         # Пароль
         find_field_by_css_and_paste_text(field_css='#passp-field-password',
                                          text_for_field=dict_with_data['Password'],
                                          press_key_enter=False)
-        sleep(2)
+        sleep(0.5)
         # Далее
         driver.find_element(By.CSS_SELECTOR, '#root > div > div.passp-page > div.passp-flex-wrapper > div > div > div.passp-auth-content > div.passp-route-forward > div > div > form > div > div > div.passp-button.passp-lite__password-submit > button').click()
-        sleep(2)
+        sleep(1)
         # Зарегистрироваться
         driver.find_element(By.CSS_SELECTOR, '#root > div > div.passp-page > div.passp-flex-wrapper > div > div > div.passp-auth-content > div.passp-route-forward > div > div > form > div.passp-button.passp-lite__password-submit > button').click()
         dict_with_data["first_name"] = first_name
@@ -1251,58 +1224,49 @@ def auth_on_yandexru_with_email_verify(driver :object) -> None:
         sleep(2)
     except:
         pass
-    sleep(7)
-    driver.refresh()
-    sleep(3)
-    # Подписаться на дзен
-    get_web_page_in_browser(url=URL_YA_DZEN)
-    sleep(5)
-    try:
-        ava = driver.find_element(By.CSS_SELECTOR, '#dzen-header > div.desktop-base-header__controls-3o.desktop-base-header__isMorda-mX > div.desktop-base-header__profileButton-bf.desktop-base-header__isMorda-mX.desktop-base-header__isAuthorized-Yz')
-        if ava:
-            ava.click()
-            sleep(2)
-            try:
-                btn_create_post = driver.find_element(By.CLASS_NAME, "menu-items__createPublication-2b")
-                if btn_create_post:  # Если есть кнопка создать публикацию есть, значит акк уже привязан к дзен
-                    dict_with_data["Dzen_status"] = 'ok'
-                    logger.info(f'Аккаунт {dict_with_data["Login"]} уже подключен к Дзен.')
-            except:
-                logger.debug('кнопка создать пост не найдена')
+    sleep(1)
+
+    # Проверяем успешная ли авторизация в яндексе
+    status = check_status_auth_yandex(driver=driver)
+    if status:
+        save_pkl_json_excel_cookies(driver=driver, url=URL_YA_ID)
+        
+        # ---------------- работа с подпиской на дзен -----------------
+        get_web_page_in_browser(url=URL_YA_DZEN)
+        sleep(5)
+        try:
+            ava = driver.find_element(By.CSS_SELECTOR, '#dzen-header > div.desktop-base-header__controls-3o.desktop-base-header__isMorda-mX > div.desktop-base-header__profileButton-bf.desktop-base-header__isMorda-mX.desktop-base-header__isAuthorized-Yz')
+            if ava:
+                ava.click()
+                sleep(2)
                 try:
-                    # Кнопки Это мой аккаунт и Разрешить доступ
-                    allow_access = driver.find_element(By.CSS_SELECTOR, '#dzen-header > div.desktop-base-header__controls-3o.desktop-base-header__isMorda-mX > div.desktop-base-header__profileButton-bf.desktop-base-header__isMorda-mX.desktop-base-header__isAuthorized-Yz > div.Popup2.Popup2_visible.Popup2_target_anchor.Popup2_view_default.Popup2_hasCloseButton > div > button.base-button__rootElement-12.base-button__isFluid-Cq.base-button__xl-UC.base-button__accentPrimary-3e')
-                    if allow_access:
-                        allow_access.click()
-                        sleep(2)
-                        driver.switch_to.window(driver.window_handles[-1])
-                        driver.find_element(By.CSS_SELECTOR, '#root > div > div > div.Approval-card > div.Approval-controls > div > button.Button2.Button2_size_l.Button2_view_action.Button2_width_max.ApprovalControls-item').click()
-                        sleep(2)
+                    btn_create_post = driver.find_element(By.CLASS_NAME, "menu-items__createPublication-2b")
+                    if btn_create_post:  # Если есть кнопка создать публикацию есть, значит акк уже привязан к дзен
                         dict_with_data["Dzen_status"] = 'ok'
-                        logger.info(f'Подключение к Дзен аккаунта {dict_with_data["Login"]} успешно выполнено.')
+                        logger.info(f'Аккаунт {dict_with_data["Login"]} уже подключен к Дзен.')
                 except:
-                    dict_with_data["Dzen_status"] = 'fail'
-                    logger.info(f'Подключение к Дзен аккаунта {dict_with_data["Login"]} успешно выполнено.')
-    except:
-        dict_with_data["Dzen_status"] = 'no status'
-        logger.debug(f'Статус подключения к Дзен не установлен')
-    driver.switch_to.window(driver.window_handles[-1])
-    sleep(2)
-    # Сохранить куки
-    get_web_page_in_browser(URL_YA_ID)
-    sleep(5)
-    # получаем cookies
-    current_cookies = driver.get_cookies()
-    # logger.debug(f'\n\n{current_cookies}\n\n')
-    # сохраняем cookies в словарь
-    dict_with_data["Cookies"] = current_cookies
-    #получаем и сохраняем куки с помощью pickle
-    pickle.dump(driver.get_cookies(), open(f"cookies_yandex/{dict_with_data['Login']}.pkl", "wb"))
-    sleep(3)
-    # Получаем и сохраняем куки в json
-    with open(f'cookies_yandex/{dict_with_data["Login"]}.json', 'w') as file:
-        json.dump(current_cookies, file)
-    logger.info(f'Cookies yandexru аккаунта {dict_with_data["Login"]} успешно сохранены')
+                    logger.debug('кнопка создать пост не найдена')
+                    try:
+                        # Кнопки Это мой аккаунт и Разрешить доступ
+                        allow_access = driver.find_element(By.CSS_SELECTOR, '#dzen-header > div.desktop-base-header__controls-3o.desktop-base-header__isMorda-mX > div.desktop-base-header__profileButton-bf.desktop-base-header__isMorda-mX.desktop-base-header__isAuthorized-Yz > div.Popup2.Popup2_visible.Popup2_target_anchor.Popup2_view_default.Popup2_hasCloseButton > div > button.base-button__rootElement-12.base-button__isFluid-Cq.base-button__xl-UC.base-button__accentPrimary-3e')
+                        if allow_access:
+                            allow_access.click()
+                            sleep(2)
+                            driver.switch_to.window(driver.window_handles[-1])
+                            driver.find_element(By.CSS_SELECTOR, '#root > div > div > div.Approval-card > div.Approval-controls > div > button.Button2.Button2_size_l.Button2_view_action.Button2_width_max.ApprovalControls-item').click()
+                            sleep(2)
+                            dict_with_data["Dzen_status"] = 'ok'
+                            logger.info(f'Подключение к Дзен аккаунта {dict_with_data["Login"]} успешно выполнено.')
+                    except:
+                        dict_with_data["Dzen_status"] = 'fail'
+                        logger.info(f'Подключение к Дзен аккаунта {dict_with_data["Login"]} успешно выполнено.')
+        except:
+            dict_with_data["Dzen_status"] = 'no status'
+            logger.debug(f'Статус подключения к Дзен не установлен')
+        # ----------- конец работы с подпиской на Дзен ----------------
+
+    else:
+        logger.error('Авторизация на яндекс не была успешной')
 
 
 def check_mailru_accounts_main():
@@ -1326,25 +1290,24 @@ def check_mailru_accounts_main():
                 try: 
                     if len(dict_with_data) != 0:  # если словарь не пустой (был заполнен данными из файла)
                         # если статус аккаунта соответствует проверяемому (из файла config.txt), None или неизвестный
-                        if (dict_with_data['Status'] == PARAM_DICT['CHECKED_STATUS']) or (dict_with_data['Status'] == None) or (dict_with_data['Status'] not in LIST_WITH_STATUS_ACC):
+                        if (dict_with_data["Status_mailru"] == PARAM_DICT['CHECKED_STATUS']) or (dict_with_data["Status_mailru"] == None) or (dict_with_data["Status_mailru"] not in LIST_WITH_STATUS_ACC):
                             # Начинаем проверку аккаунта, получаем после проверки обновленные данные
                             check_account_mailru()
 
                             # Записать данные (новый пароль, статус, куки) в xlsx файл
                             logger.debug(f'Получен словарь {dict_with_data}')
-                            cur_cell = worksheet.cell(row=current_row, column=2, value=dict_with_data['Password'])
+                            cur_cell = worksheet.cell(row=current_row, column=2, value=dict_with_data["Password"])
                             logger.debug(f'В ячейку записан пароль {cur_cell.value}')
-                            cur_cell = worksheet.cell(row=current_row, column=4, value=dict_with_data["Status"])
+                            cur_cell = worksheet.cell(row=current_row, column=6, value=dict_with_data["Status_mailru"])
                             logger.info(f'Статус проверяемого аккаунта - {cur_cell.value}')
-                            # cur_cell = worksheet.cell(row=current_row, column=5, value=dict_with_data["Cookies"])
 
                             if dict_with_data["Cookies_mailru"]:  # Если есть cookies mailru, то сохраняем их в excel
-                                # print(dict_with_data['Cookies'])
+                                # print(dict_with_data["Cookies_mailru"])
                                 cur_cell = worksheet.cell(row=current_row, column=7, value=str(dict_with_data["Cookies_mailru"]))
                             
                             # ----------Работает только с аккаунтами, у которых подтвержден телефон -----------
                             # # Для аккаунтов со статусом ok - создаем пароль mailru для приложений
-                            # if dict_with_data["Status"] == 'ok' and dict_with_data["Psw_mailru_for_app"] is None:
+                            # if dict_with_data["Status_mailru"] == 'ok' and dict_with_data["Psw_mailru_for_app"] is None:
                             #     create_on_mailru_psw_for_external_apps(driver=driver)
                             #     cur_cell = worksheet.cell(row=current_row, column=6, value=dict_with_data["Psw_mailru_for_app"])
                             #     if dict_with_data["Psw_mailru_for_app"]:
@@ -1353,14 +1316,14 @@ def check_mailru_accounts_main():
                             logger.info(f'Попытка сохранить книгу excel')
                             workbook.save(filename='combined_mailru.xlsx')  # сохранить xlsx файл
 
-                            if dict_with_data["Status"] == 'ok':
+                            if dict_with_data["Status_mailru"] == 'ok':
                                 auth_on_yandexru_with_email_verify(driver=driver)
                                 logger.debug(f'Получен словарь {dict_with_data}')
                                 # Записать данные (куки яндекс) в xlsx файл
                                 if dict_with_data["Dzen_status"] == 'ok':
                                     cur_cell = worksheet.cell(row=current_row, column=8, value=dict_with_data["Dzen_status"])
-                                if dict_with_data["Cookies"]:
-                                    cur_cell = worksheet.cell(row=current_row, column=5, value=str(dict_with_data["Cookies"]))
+                                if dict_with_data["Cookies_yandex"]:
+                                    cur_cell = worksheet.cell(row=current_row, column=5, value=str(dict_with_data["Cookies_yandex"]))
                                 if dict_with_data["first_name"]:
                                     cur_cell = worksheet.cell(row=current_row, column=9, value=str(dict_with_data["first_name"]))
                                 if dict_with_data["last_name"]:
@@ -1383,7 +1346,7 @@ def check_mailru_accounts_main():
                             # print(f'Обновленные данные {dict_with_data}')
 
                         # если статус аккаунта ok, переходим к следующему
-                        if (dict_with_data['Status'] == 'ok') and  (PARAM_DICT['CHECKED_STATUS'] != 'ok'):
+                        if (dict_with_data["Status_mailru"] == 'ok') and  (PARAM_DICT['CHECKED_STATUS'] != 'ok'):
                             logger.info('Аккаунт со статусом "ok". Переход к следующему.')
                 except:
                     logger.error(f'При проверке {dict_with_data["Login"]} возникла непредвиденная ошибка')
@@ -1401,7 +1364,7 @@ def check_mailru_accounts_main():
                         logger.info(f'Обнаружена пустая строка - {current_row}.')
                         need_retry_check = False  # нужна ли повторная проверка
                         for r in range(2, current_row):
-                            c = worksheet.cell(row=r, column=LIST_WITH_COLUMNS_COMBINED.index('Status')+1)
+                            c = worksheet.cell(row=r, column=LIST_WITH_COLUMNS_COMBINED.index('Status_yandex')+1)
                             # если значение статуса не содержится в словаре со статусами исключая no status
                             if c.value not in LIST_WITH_STATUS_ACC[1: ]:
                                 need_retry_check = True
@@ -1446,7 +1409,7 @@ def start_change_password():
             # загрузить куки текущего пользователя
             logger.debug(f'Работаем с аккаунтом {dict_with_data["Login"]}')
             try:
-                cookies = pickle.load(open(f'cookies_mailru/{dict_with_data["Login"]}.pkl', "rb"))
+                cookies = pickle.load(open(f'cookies_yandex/{dict_with_data["Login"]}.pkl', "rb"))
             except:
                 pass
             if cookies is None:
@@ -1469,7 +1432,7 @@ def start_change_password():
             el_avatar3 = check_avatar3_on_page_and_click()  # аватар 2 вида
             if el_avatar1 or el_avatar2 or el_avatar3:
                 logger.info(f'Вход выполнен успешно')
-                dict_with_data['Status'] = 'ok'
+                dict_with_data["Status_yandex"] = 'ok'
                 if el_avatar1: 
                     cur_avatar_obj = el_avatar1
                 elif el_avatar2:
@@ -1481,16 +1444,16 @@ def start_change_password():
                 new_psw = navigate_menu_and_change_password(el_avatar=cur_avatar_obj, dict_with_data=dict_with_data)
                 if new_psw:
                     dict_with_data['Password'] = new_psw
-                    dict_with_data['Status'] = 'ok_psw_changed'
+                    dict_with_data["Status_yandex"] = 'ok_psw_changed'
 
                 # получаем cookies
                 current_cookies = driver.get_cookies()
                 # print(f'\n\n{current_cookies}\n\n')
                 # сохраняем cookies в словарь
-                dict_with_data['Cookies'] = current_cookies
+                dict_with_data["Cookies_yandex"] = current_cookies
 
                 #получаем и сохраняем куки с помощью pickle
-                pickle.dump(driver.get_cookies(), open(f"cookies_mailru/{dict_with_data['Login']}.pkl", "wb"))
+                pickle.dump(driver.get_cookies(), open(f"cookies_yandex/{dict_with_data['Login']}.pkl", "wb"))
 
         else:
             logger.error(f'В файле config.txt установлено неверное значение параметра PARAMETER_CHANGE_PASSWORD_USE_COOKIES, установите True')
@@ -1541,20 +1504,20 @@ def change_password_for_ok_accs_main():
                 try: 
                     if len(dict_with_data) != 0:  # если словарь не пустой (был заполнен данными из файла)
                         # если статус аккаунта ok
-                        if dict_with_data['Status'] == 'ok':
+                        if dict_with_data["Status_yandex"] == 'ok':
                             # Начинаем смену пароля, получаем после проверки обновленные данные
                             start_change_password()
                             # Записать данные (новый пароль, статус, куки) в xlsx файл
                             # logger.debug(f'Получен словарь {dict_with_data}')
                             cur_cell = worksheet.cell(row=current_row, column=2, value=dict_with_data['Password'])
                             print(f'В ячейку записан пароль {cur_cell.value}')
-                            cur_cell = worksheet.cell(row=current_row, column=4, value=dict_with_data['Status'])
-                            print(f'В ячейку записан статус {dict_with_data["Status"]}')
+                            cur_cell = worksheet.cell(row=current_row, column=4, value=dict_with_data["Status_yandex"])
+                            print(f'В ячейку записан статус {dict_with_data["Status_yandex"]}')
                             logger.info(f'Статус проверяемого аккаунта - {cur_cell.value}')
                         
-                            if dict_with_data['Cookies']:
-                                # print(dict_with_data['Cookies'])
-                                cur_cell = worksheet.cell(row=current_row, column=5, value=str(dict_with_data['Cookies']))
+                            if dict_with_data["Cookies_yandex"]:
+                                # print(dict_with_data["Cookies_yandex"])
+                                cur_cell = worksheet.cell(row=current_row, column=5, value=str(dict_with_data["Cookies_yandex"]))
                             
                             print(f'Попытка сохранить книгу')
                             workbook.save(filename='combined_mailru.xlsx')  # сохранить xlsx файл
@@ -1575,7 +1538,7 @@ def change_password_for_ok_accs_main():
                         logger.info(f'Обнаружена пустая строка - {current_row}.')
                         need_retry_check = False  # нужна ли повторная проверка
                         # for r in range(2, current_row):
-                        #     c = worksheet.cell(row=r, column=LIST_WITH_COLUMNS_COMBINED.index('Status')+1)
+                        #     c = worksheet.cell(row=r, column=LIST_WITH_COLUMNS_COMBINED.index('Status_yandex')+1)
                         #     # если значение статуса не содержится в словаре со статусами исключая no status
                         #     if c.value not in LIST_WITH_STATUS_ACC[1: ]:
                         #         need_retry_check = True
@@ -1626,7 +1589,7 @@ def delete_unvalid_accounts_from_xlsx():
                 try: 
                     if len(dict_with_data) != 0:  # если словарь не пустой (был заполнен данными из файла)
                         # если статус аккаунта соответствует проверяемому (из файла config.txt)
-                        if dict_with_data['Status'] == target_status_accs_for_deleted:
+                        if dict_with_data["Status_yandex"] == target_status_accs_for_deleted:
                             try:
                                 # Удалить текущую строку из файла
                                 worksheet.delete_rows(current_row, 1)  # индекс, кол-во
@@ -1640,7 +1603,7 @@ def delete_unvalid_accounts_from_xlsx():
                                 logger.info(f'Создан backup файла combined_mailru.xlsx')
                             logger.debug(f'файл xlsx сохранен')
                         else:
-                            # logger.debug(f'Аккаунт со статусом {dict_with_data["Status"]}. Переход к следующему.')
+                            # logger.debug(f'Аккаунт со статусом {dict_with_data["Status_mailru"]}. Переход к следующему.')
                             pass
                 except:
                     logger.error(f'При проверке {dict_with_data["Login"]} возникла непредвиденная ошибка')
@@ -1652,7 +1615,7 @@ def delete_unvalid_accounts_from_xlsx():
                         logger.info(f'Обнаружена пустая строка - {current_row}.')
                         need_retry_check = False  # нужна ли повторная проверка
                         for r in range(2, current_row):
-                            c = worksheet.cell(row=r, column=LIST_WITH_COLUMNS_COMBINED.index('Status')+1)
+                            c = worksheet.cell(row=r, column=LIST_WITH_COLUMNS_COMBINED.index('Status_yandex')+1)
                             # если значение статуса не содержится в словаре со статусами исключая no status
                             if c.value == target_status_accs_for_deleted:
                                 need_retry_check = True
@@ -1701,7 +1664,7 @@ def start_set_password_app():
             # загрузить куки текущего пользователя
             logger.debug(f'Работаем с аккаунтом {dict_with_data["Login"]}')
             try:
-                cookies = pickle.load(open(f'cookies_mailru/{dict_with_data["Login"]}.pkl', "rb"))
+                cookies = pickle.load(open(f'cookies_yandex/{dict_with_data["Login"]}.pkl', "rb"))
             except:
                 pass
             if cookies is None:
@@ -1722,7 +1685,7 @@ def start_set_password_app():
                 el_avatar2 = check_avatar2_on_page_and_click()  # аватар 2 вида
                 if el_avatar or el_avatar2:
                     logger.info(f'Вход выполнен успешно')
-                    dict_with_data['Status'] = 'ok'
+                    dict_with_data["Status_yandex"] = 'ok'
                     # get_web_page_in_browser(url='https://id.yandex.ru/security')  # безопасность
                     # sleep(2)
                     get_web_page_in_browser(url='https://id.yandex.ru/security/app-passwords')  # пароли приложений
@@ -1796,12 +1759,12 @@ def set_password_app_main():
                 try: 
                     if len(dict_with_data) != 0:  # если словарь не пустой (был заполнен данными из файла)
                         # если статус аккаунта ok 
-                        if (dict_with_data["Status"] == 'ok') and (dict_with_data["Psw_mailru_for_app"] == None):
+                        if (dict_with_data["Status_mailru"] == 'ok') and (dict_with_data["Psw_mailru_for_app"] == None):
                             # Начинаем получение пароля, получаем после проверки обновленные данные
                             start_set_password_app()
                             # Записать данные (пароль для приложения почта) в xlsx файл
                             if dict_with_data["Psw_mailru_for_app"]:
-                                cur_cell = worksheet.cell(row=current_row, column=6, value=str(dict_with_data["Psw_mailru_for_app"]))
+                                cur_cell = worksheet.cell(row=current_row, column=11, value=str(dict_with_data["Psw_mailru_for_app"]))
                             
                             logger.info(f'Попытка сохранить книгу')
                             workbook.save(filename='combined_mailru.xlsx')  # сохранить xlsx файл

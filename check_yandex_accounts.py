@@ -606,7 +606,7 @@ def check_account():
                 current_cookies = driver.get_cookies()
                 # print(f'\n\n{current_cookies}\n\n')
                 # сохраняем cookies в словарь
-                dict_with_data['Cookies'] = current_cookies
+                dict_with_data['Cookies_yandex'] = current_cookies
 
                 #получаем и сохраняем куки с помощью pickle
                 pickle.dump(driver.get_cookies(), open(f"cookies_yandex/{dict_with_data['Login']}.pkl", "wb"))
@@ -678,9 +678,9 @@ def check_yandex_accounts_main():
                             print(f'В ячейку записан статус {dict_with_data["Status"]}')
                             logger.info(f'Статус проверяемого аккаунта - {cur_cell.value}')
                         
-                            if dict_with_data['Cookies']:
-                                # print(dict_with_data['Cookies'])
-                                cur_cell = worksheet.cell(row=current_row, column=5, value=str(dict_with_data['Cookies']))
+                            if dict_with_data['Cookies_yandex']:
+                                # print(dict_with_data['Cookies_yandex'])
+                                cur_cell = worksheet.cell(row=current_row, column=5, value=str(dict_with_data['Cookies_yandex']))
                             
                             print(f'Попытка сохранить книгу')
                             workbook.save(filename='combined.xlsx')  # сохранить xlsx файл
@@ -787,7 +787,7 @@ def start_change_password():
                 current_cookies = driver.get_cookies()
                 # print(f'\n\n{current_cookies}\n\n')
                 # сохраняем cookies в словарь
-                dict_with_data['Cookies'] = current_cookies
+                dict_with_data['Cookies_yandex'] = current_cookies
 
                 #получаем и сохраняем куки с помощью pickle
                 pickle.dump(driver.get_cookies(), open(f"cookies_yandex/{dict_with_data['Login']}.pkl", "wb"))
@@ -855,9 +855,9 @@ def change_password_for_ok_accs_main():
                             print(f'В ячейку записан статус {dict_with_data["Status"]}')
                             logger.info(f'Статус проверяемого аккаунта - {cur_cell.value}')
                         
-                            if dict_with_data['Cookies']:
-                                # print(dict_with_data['Cookies'])
-                                cur_cell = worksheet.cell(row=current_row, column=5, value=str(dict_with_data['Cookies']))
+                            if dict_with_data['Cookies_yandex']:
+                                # print(dict_with_data['Cookies_yandex'])
+                                cur_cell = worksheet.cell(row=current_row, column=5, value=str(dict_with_data['Cookies_yandex']))
                             
                             print(f'Попытка сохранить книгу')
                             workbook.save(filename='combined.xlsx')  # сохранить xlsx файл
