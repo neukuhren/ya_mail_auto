@@ -15,7 +15,7 @@ from read_combined import read_combined_main
 from check_yandex_accounts import check_yandex_accounts_main, change_password_for_ok_accs_main,\
     delete_unvalid_accounts_from_xlsx, set_password_app_main
 from read_links import read_links_main
-from send_messages import send_messages_main
+from autoru_send_messages import send_messages_main
 from check_mailru_accounts import check_mailru_accounts_main
 
 
@@ -42,20 +42,17 @@ def main(*selected_work_mode :int) -> None:
         elif selected_work_mode == 3:
             read_links_main()
         elif selected_work_mode == 4:
-            send_messages_main(yandex_or_mail_accs='yandex')
+            send_messages_main()
         elif selected_work_mode == 5:
             change_password_for_ok_accs_main()
         elif selected_work_mode == 6:
             delete_unvalid_accounts_from_xlsx()
         elif selected_work_mode == 7:
             set_password_app_main()
-        if selected_work_mode == 8:
+        elif selected_work_mode == 8:
             read_combined_main(8)
-        if selected_work_mode == 9:
+        elif selected_work_mode == 9:
             check_mailru_accounts_main()
-        elif selected_work_mode == 10:
-            print('Выбранный режим находится в стадии разработки.')
-            # send_messages_main(yandex_or_mail_accs='mail')
         elif selected_work_mode not in DICT_WORK_MODES.keys():
             logger.debug(f'Выбранного режима "{selected_work_mode}" нет в списке {DICT_WORK_MODES}')
             print(f'Ошибка! Выбранного режима "{selected_work_mode}" не существует.'\

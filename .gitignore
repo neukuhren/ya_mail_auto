@@ -161,7 +161,7 @@ cython_debug/
 
 # Содержат личные данные
 backups/*
-cookies_autoru/*
+system_files/cookies_autoru/*
 cookies_mailru/*
 cookies_yandex/*
 extensions/
@@ -183,5 +183,11 @@ test_output.txt
 test.py
 text.txt
 
+
+image_captcha.png
 vosk-model-en-us-0.22-lgraph/
 vosk-model-small-en-us-0.15
+
+заметки.txt
+old_send_messages_copy.py
+work_google_sheets.py

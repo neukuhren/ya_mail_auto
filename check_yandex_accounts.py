@@ -37,7 +37,8 @@ from utils import generate_random_password
 from txt_utils import write_in_end_row_file_txt, read_txt_file_and_lines_to_list,\
     read_parameters_from_txt_file_and_add_to_dict
 from captcha_utils import  decrypt_captcha_deform_text
-from excel_utils import open_xlsx_file_and_return_active_sheet # write_to_excel
+from excel_utils import open_xlsx_file_and_return_active_sheet
+from work_sheet import next_available_row, write_cell
 
 
 
@@ -614,6 +615,15 @@ def check_account():
                 with open(f'cookies_yandex/{dict_with_data["Login"]}.json', 'w') as file:
                     json.dump(current_cookies, file)
                 
+                empty_row = next_available_row('yandex')
+                write_cell('yandex',
+                        [[dict_with_data["Login"], 1],
+                        [dict_with_data["Password"], 2],
+                        [dict_with_data["Status_yandex"], 4],
+                        [dict_with_data["Cookies_yandex"], 5],
+                        ],
+                        target_row=empty_row,
+                        )
 
     # print(user_data)
     # forward_to_next_account = input('Перейти к следующему аккаунту? (y/n): ')

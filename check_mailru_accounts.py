@@ -46,6 +46,7 @@ from captcha_utils import find_and_click_captcha_iam_not_robot, \
     decrypt_recaptcha_v2_iam_not_robot, decrypt_captcha_deform_text, \
     hack_recaptcha_used_audio_file
 from vosk_simple import text_from_mp3
+from work_sheet import next_available_row, write_cell
 
 import logging # Импортируем библиотеку для безопасного хранения логов
 # Установлены настройки логгера для текущего файла
@@ -736,10 +737,10 @@ def check_status_auth_yandex(driver :object) -> bool:
         sleep(2)
         cur_avatar_obj = None
         # print('Проверяю аватар')
-        el_avatar1 = check_avatar1_yandex_on_page_and_click()  # аватар 1 вида
-        el_avatar2 = check_avatar2_on_page_and_click()  # аватар 2 вида
-        el_avatar3 = check_avatar3_on_page_and_click()  # аватар 3 вида
-        el_avatar4 = check_avatar4_on_page_and_click()  # аватар 4 вида
+        el_avatar1 = check_avatar1_yandex_on_page_and_click(driver=driver)  # аватар 1 вида
+        el_avatar2 = check_avatar2_on_page_and_click(driver=driver)  # аватар 2 вида
+        el_avatar3 = check_avatar3_on_page_and_click(driver=driver)  # аватар 3 вида
+        el_avatar4 = check_avatar4_on_page_and_click(driver=driver)  # аватар 4 вида
         if el_avatar1 or el_avatar2 or el_avatar3 or el_avatar4:
             logger.info(f'Вход выполнен успешно')
             dict_with_data["Status_yandex"] = 'ok'
@@ -1060,7 +1061,7 @@ def save_pkl_json_excel_cookies(driver, url):
         folder = 'cookies_mailru'
     pickle.dump(driver.get_cookies(), open(f'{folder}/{dict_with_data["Login"]}.pkl', "wb"))
     sleep(1)
-    # Получаем и сохраняем куки в json
+    # сохраняем куки в json
     with open(f'{folder}/{dict_with_data["Login"]}.json', 'w') as file:
         json.dump(current_cookies, file)
         logger.info(f'Cookies аккаунта {dict_with_data["Login"]} успешно сохранены в {folder}')
@@ -1304,6 +1305,15 @@ def check_mailru_accounts_main():
                             if dict_with_data["Cookies_mailru"]:  # Если есть cookies mailru, то сохраняем их в excel
                                 # print(dict_with_data["Cookies_mailru"])
                                 cur_cell = worksheet.cell(row=current_row, column=7, value=str(dict_with_data["Cookies_mailru"]))
+                                empty_row = next_available_row('mailru')
+                                write_cell('mailru',
+                                           [[dict_with_data["Login"], 1],
+                                            [dict_with_data["Password"], 2],
+                                            [dict_with_data["Status_mailru"], 6],
+                                            [dict_with_data["Cookies_mailru"], 7],
+                                           ],
+                                           target_row=empty_row,
+                                           )
                             
                             # ----------Работает только с аккаунтами, у которых подтвержден телефон -----------
                             # # Для аккаунтов со статусом ok - создаем пароль mailru для приложений
@@ -1315,6 +1325,7 @@ def check_mailru_accounts_main():
                             
                             logger.info(f'Попытка сохранить книгу excel')
                             workbook.save(filename='combined_mailru.xlsx')  # сохранить xlsx файл
+
 
                             if dict_with_data["Status_mailru"] == 'ok':
                                 auth_on_yandexru_with_email_verify(driver=driver)
@@ -1328,7 +1339,16 @@ def check_mailru_accounts_main():
                                     cur_cell = worksheet.cell(row=current_row, column=9, value=str(dict_with_data["first_name"]))
                                 if dict_with_data["last_name"]:
                                     cur_cell = worksheet.cell(row=current_row, column=10, value=str(dict_with_data["last_name"]))
-                            
+                                if dict_with_data["Cookies_yandex"]:
+                                    empty_row = next_available_row('yandex')
+                                    write_cell('yandex',
+                                           [[dict_with_data["Login"], 1],
+                                            [dict_with_data["Password"], 2],
+                                            [dict_with_data["Status_yandex"], 4],
+                                            [dict_with_data["Cookies_yandex"], 5],
+                                           ],
+                                           target_row=empty_row,
+                                           )
                             logger.info(f'Попытка сохранить книгу excel')
                             workbook.save(filename='combined_mailru.xlsx')  # сохранить xlsx файл
                             if current_row % 10 == 0:

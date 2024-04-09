@@ -1,35 +1,44 @@
-## Системные требования:
+## ------------ Системные требования: ----------------
 Наличие браузера Google Chrome https://www.google.com/intl/ru/chrome/
 Наличие интерпретатора python  https://www.python.org/downloads/
 - обязательно: не ниже версии 3.8 (windows 7 last python version)
 - рекомендуется: не ниже версии 3.11.4
 
-## Установка
+## -------------------Установка ----------------------
+### Создать папки:
+cookies_yandex
+cookies_mailru
+cookies_autoru
+backups
+extensions
+
 ## Запустить терминал и выполнить следующие команды:
 ### на Windows:
 python -m venv venv
 . venv/scripts/activate
 python -m pip install --upgrade pip
 pip install -r req.txt
+
 ### на Mac OS:
 python3 -m venv venv
 . venv/bin/activate
-python3 -m pip install --upgrade pip
-pip install -r req.txt
+python3 -m pip3 install --upgrade pip
+pip3 install -r req.txt
 
-## Подготовка к запуску:
+
+## ------------- Подготовка к запуску: ----------------
 1. ### Ранее сохраненные cookies-файлы формата .pkl
 поместить в соответствующие папки cookies_yandex и cookies_mailru
-2. ### Ранее схраненные сведения об аккаунтах в формате xlsx-файлов
+2. ### Ранее сохраненные сведения об аккаунтах в формате xlsx-файлов
 - combined.xlsx (данные аккаунтов yandex)
 - combined_mailru.xlsx (данные аккаунтов mail.ru)
-поместить в корневую папку проекта (yandex_auto)
+поместить в корневую папку проекта (ya_mail_auto)
 3. ### Исходные данные об аккаунтах в формате txt-файлов 
 - combined.txt (данные аккаунтов yandex)
 - combined_mailru.txt (данные аккаунтов mail.ru)
-поместить в корневую папку проекта (yandex_auto)
+поместить в корневую папку проекта (ya_mail_auto)
 4. ### Шаблоны текстовых сообщений для рассылки в файле text.txt
-поместить в корневую папку проекта (yandex_auto)
+поместить в корневую папку проекта (ya_mail_auto)
 5. ### Для обхода каптчи
 В файле config.txt в строке API_KEY_FOR_RUCAPTCHA: 
 указать после двоеточия значение ключа с сайта https://2captcha.com/enterpage
@@ -50,11 +59,11 @@ USED_NAME_FROM_MAILRU:True
 Для этого параметр изменить на
 USED_NAME_FROM_MAILRU:False
 
-## Запуск 
-Запустить терминал и выполнить следующие команды:
+## --------------------- Запуск ------------------------
+### Запустить терминал и выполнить следующие команды:
 ### на Windows:
 . venv/scripts/activate
 python main.py
 ### на Mac OS:
 . venv/bin/activate
-python main.py
+python3 main.py
