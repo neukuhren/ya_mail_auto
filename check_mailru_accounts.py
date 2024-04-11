@@ -346,7 +346,7 @@ def find_label_invalid_login(driver :object) -> None:
         el_field_invalid_login = driver.find_element(By.ID, 'field:input-login:hint')
         # Логин введен некорректно или удален
         logger.info(f'На странице было найдено поле неверный логин')
-        dict_with_data["Status_yandex"] = 'invalid'
+        dict_with_data["Status_mailru"] = 'invalid'
     except:
         logger.debug(f'Поле неверный логин не найдено')
 
@@ -368,14 +368,15 @@ def find_el_first_email_and_click(driver :object) -> None:
         logger.debug(f'Поле неверный логин не найдено')
 
 
-def find_field_invalid_password(driver :object) -> None:
-    """Проверяет есть ли поле passwd и вставляет текстовое значение пароля.
+def find_field_invalid_password(driver :object) -> bool:
+    """Проверяет есть ли поле passwd.
     """
     logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
     try:
-        el_field_invalid_passwd = driver.find_element(By.ID, 'field:input-passwd:hint')
+        # el_field_invalid_passwd = driver.find_element(By.ID, 'field:input-passwd:hint')
+        el_field_invalid_passwd = driver.find_element(By.CSS_SELECTOR, '#root > div:nth-child(2) > div > div > div > div > div > form > div:nth-child(2) > div > div.login-row.password.fill-icon > div > div > div > div > div > input')
         logger.info(f'На странице было поле неверный пароль')
-        dict_with_data["Status_mailru"] = 'invalid'
+        return True
     except:
         logger.debug(f'Поле неверный пароль не найдено')
 
@@ -874,15 +875,19 @@ def check_account_mailru():
             find_field_and_insert_passwd_text(passwd=dict_with_data['Password'])
             sleep(3)
             find_window_make_its_you_and_click_its_me(driver=driver)
-            sleep(2)
-            # find_and_click_captcha_iam_not_robot(driver=driver)
+            sleep(1)
+            find_field_and_insert_passwd_text(passwd=dict_with_data['Password'])
+            sleep(1)
+            if find_field_invalid_password(driver=driver):
+                dict_with_data["Status_mailru"] = 'invalid'
+            find_and_click_captcha_iam_not_robot(driver=driver)
             hack_recaptcha_used_audio_file(driver=driver)
             find_label_invalid_login(driver=driver)
             # if find_image2fa_entertype():
             #     find_and_click_btn_psw()
             #     sleep(1)
             #     find_field_and_insert_passwd_text(passwd=dict_with_data['Password'])
-            find_field_invalid_password(driver=driver)
+                
             find_advanced_captcha(driver=driver)
             find_magicpromopage_title_qr_code(driver=driver)
 
@@ -898,10 +903,10 @@ def check_account_mailru():
             # Если вход возможен только по коду из смс
             if check_entry_only_sms(driver=driver):
                 dict_with_data["Status_mailru"] = 'sms'
-            
             elif check_need_recovery(driver=driver):
                 dict_with_data["Status_mailru"] = 'recovery'
-
+            elif dict_with_data["Status_mailru"] == 'invalid':
+                pass
             else:
                 # print('Проверяю аватар')
                 el_avatar1 = check_avatar1_mail_on_page_and_click(driver=driver)  # аватар 1 вида

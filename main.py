@@ -17,6 +17,7 @@ from check_yandex_accounts import check_yandex_accounts_main, change_password_fo
 from read_links import read_links_main
 from autoru_send_messages import send_messages_main
 from check_mailru_accounts import check_mailru_accounts_main
+from converter_pkl_to_json import convert_pkl_to_json_files_from_dir
 
 
 logger = logging.getLogger(__name__)
@@ -53,11 +54,14 @@ def main(*selected_work_mode :int) -> None:
             read_combined_main(8)
         elif selected_work_mode == 9:
             check_mailru_accounts_main()
+        elif selected_work_mode == 10:
+            convert_pkl_to_json_files_from_dir()
         elif selected_work_mode not in DICT_WORK_MODES.keys():
             logger.debug(f'Выбранного режима "{selected_work_mode}" нет в списке {DICT_WORK_MODES}')
             print(f'Ошибка! Выбранного режима "{selected_work_mode}" не существует.'\
                 f'Требуется перезагрузить программу.')
-    except:
+    except Exception as exc:
+        logger.critical(exc)
         logger.critical(f'КРИТИЧЕСКАЯ ОШИБКА: при выполнении функции {inspect.currentframe().f_code.co_name}. Требуется перезапуск программы.')
 
 
