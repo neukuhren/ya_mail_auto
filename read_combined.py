@@ -30,7 +30,8 @@ def read_txt_file_on_lines_and_return_to_list(file_name : str) -> list:
             list_with_dicts_users_data = []
             while line := file.readline():
                 cur_line = line.rstrip()
-                _user_data = cur_line.split(':')  # Список [Login, Password, Answer]
+                splitter_symbol = ';' if ';' in cur_line else ':'
+                _user_data = cur_line.split(splitter_symbol)  # Список [Login, Password, Answer]
                 _user_data_dict = {}
                 # Пробежимся по списку [Login, Password, Answer], занесем данные в словарь
                 for _index, _value in enumerate(_user_data):
@@ -100,12 +101,13 @@ def write_to_excel(list_with_data, file_name : str):
         print(f'ВНИМАНИЕ! Данные в файле {file_name} будут перезаписаны начиная со строки {cur_row}. ')
         selected_start_empty_row = input(f'Введите y - для подтверждения, n - для отмены перезаписи. '\
                                          f'Или введите номер строки, с которой начать запись: ')
-        
-    # Если введено 'y' или номер строки
-    if (selected_start_empty_row.lower() == 'y') or (int(selected_start_empty_row) > 0):
-        if int(selected_start_empty_row) > 0:  
-            cur_row = int(selected_start_empty_row) 
-        # Итерируемся по списку со словарями заполняем строки таблицы
+    try:
+        # Если введено 'y' или номер строки
+        if selected_start_empty_row.lower() == 'y':
+            pass
+        elif int(selected_start_empty_row) > 0:
+            cur_row = int(selected_start_empty_row)
+            # Итерируемся по списку со словарями заполняем строки таблицы
         try:
             for dict_with_data in list_with_data:
                 # dict_with_data это словарь {'Login', 'Password', 'Answer', 'Status', 'Cookies'}
@@ -114,24 +116,21 @@ def write_to_excel(list_with_data, file_name : str):
                                             column=number_column,
                                             value=dict_with_data[LIST_WITH_COLUMNS_COMBINED[number_column-1]])
                 cur_row += 1
-            logger.INFO('Данные из файла txt успешно перенесены.')
+            logger.info('Данные из файла txt успешно перенесены.')
         except:
-            # logger.critical('КРИТИЧЕСКАЯ ОШИБКА: при записи данных в файл xlsx.')
-            pass
-
-        # worksheet['A10'].value = 123
-        # cell_a10 = worksheet['A10']
-        # print(f'в ячейке {cell_a10} найдено значение {cell_a10.value}')
-        # d = worksheet.cell(row=10, column=3, value='12.05.2006')
-        # print(d.value)
+            logger.critical('КРИТИЧЕСКАЯ ОШИБКА: при записи данных в файл xlsx.')
         try:
             workbook.save(file_name)
             logger.info(f'Книга {file_name} успешно сохранена.')
             workbook.close
         except:
             logger.critical('КРИТИЧЕСКАЯ ОШИБКА: при сохранении файла xlsx.')
-    else:
-        print(f'Запись данных в файл {file_name} отменена.')
+    except:
+        # Если нажата 'n'
+        if selected_start_empty_row.lower() == 'n':
+            print(f'Запись данных в файл {file_name} отменена.')
+        return
+
     print('Работы программы по переносу данных завершена.')
 
 

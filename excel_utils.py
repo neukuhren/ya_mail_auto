@@ -41,8 +41,8 @@ def open_xlsx_file_and_return_active_sheet(file_name='combined.xlsx'):
             logger.debug(f'Рабочий лист {worksheet} найден')
         else:
             logger.debug(f'Рабочий лист {worksheet} не найден')
-    except:
-        logger.critical('КРИТИЧЕСКАЯ ОШИБКА: xlsx файл или лист. Получение данных невозможно.')
+    except Exception as exc:
+        logger.critical(f'КРИТИЧЕСКАЯ ОШИБКА: xlsx файл или лист. Получение данных невозможно. {exc}')
     return workbook, worksheet
 
 

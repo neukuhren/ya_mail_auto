@@ -83,6 +83,5 @@ if __name__ == '__main__':
     main()
 
     print('\n\n')
-    print('Время работы программы составило: ')
-    print("--- %s seconds ---" % round((time() - start_time), 0))
+    print(f'Время ожидания составило {round((time() - start_time), 0)} сек')
     print('[!] Программа выполнена.')

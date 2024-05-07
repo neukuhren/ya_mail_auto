@@ -37,7 +37,7 @@ from config import  USER_AGENT_MY_GOOGLE_CHROME, PATH_TO_FILE_DRIVER_CHROME,\
     LIST_WITH_COLUMNS_COMBINED, LIST_WITH_STATUS_ACC
     # HEADLESS, PARAMETER_CHANGE_PASSWORD,
 from browser import init_driver
-from captcha_utils import decrypt_captcha_deform_text
+from captcha_utils import decrypt_captcha_deform_text, hack_recaptcha_use_twocaptcha
 from utils import  generate_random_password, timer_in_consol
 from txt_utils import write_in_end_row_file_txt, read_txt_file_and_lines_to_list, \
     read_parameters_from_txt_file_and_add_to_dict
@@ -88,6 +88,7 @@ def find_field_by_css_and_paste_text(field_css: str, text_for_field: str, press_
     """
     logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
     try:
+        driver.implicitly_wait(3)
         el_field = driver.find_element(By.CSS_SELECTOR, field_css)
         logger.debug(f'Поле {field_css} найдено.')
         el_field.click()
@@ -96,6 +97,7 @@ def find_field_by_css_and_paste_text(field_css: str, text_for_field: str, press_
                 el_field.send_keys(text_for_field, Keys.ENTER)
             else:
                 el_field.send_keys(text_for_field)
+            sleep(5)
         except:
             logger.error(f'Ошибка при заполнении поля {field_css}')
     except:
@@ -251,10 +253,11 @@ def find_field_and_insert_email_text_on_page_mail(login_email: str) -> None:
     """
     logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
     try:
+        driver.implicitly_wait(10)
         el_field_login_email = driver.find_element(By.CSS_SELECTOR, "#root > div:nth-child(2) > div > div > div > div > div > form > div:nth-child(2) > div:nth-child(2) > div.login-row.username > div > div > div > div > div > div.base-0-2-64.first-0-2-70 > div > input")
         logger.debug(f'На странице было найдено поле login-email')
         try:
-            el_field_login_email.send_keys(login_email)  # , Keys.ENTER
+            el_field_login_email.send_keys(login_email, Keys.ENTER)  
         except:
             logger.error('Ошибка при заполнении поля login-email')
     except:
@@ -266,6 +269,7 @@ def find_field_and_insert_email_text_on_page_yandex(login_email: str) -> None:
     """
     logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
     try:
+        driver.implicitly_wait(3)
         el_field_login_email = driver.find_element(By.CSS_SELECTOR, "#passp-field-login")
         logger.debug(f'На странице было найдено поле login-email')
         el_field_login_email.click()
@@ -282,14 +286,32 @@ def find_and_click_btn_input_psw() -> None:
     """
     logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
     try:
+        driver.implicitly_wait(2)
         el_btn_signin = driver.find_element(By.CSS_SELECTOR, "#root > div:nth-child(2) > div > div > div > div > div > form > div:nth-child(2) > div:nth-child(2) > div:nth-child(3) > div > div > div.submit-button-wrap > button")
         logger.debug(f'На странице была найдена кнопка "Ввести пароль". Кликаю')
         try:
             el_btn_signin.click()
+            driver.implicitly_wait(3)
         except:
             logger.error('Ошибка при клике на кнопку "Ввести пароль"')
     except:
         logger.debug(f'Кнопка "Ввести пароль" не найдена')
+
+def find_and_click_btn_sign_in() -> None:
+    """Проверяет есть ли кнопка "Войти" и кликает на неё.
+    """
+    logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
+    try:
+        driver.implicitly_wait(2)
+        el_btn_signin = driver.find_element(By.CSS_SELECTOR, '#root > div:nth-child(2) > div > div > div > div > div > form > div:nth-child(2) > div:nth-child(5) > div:nth-child(3) > div > div > div.submit-button-wrap > button')
+        logger.debug(f'На странице была найдена кнопка "Войти". Кликаю')
+        try:
+            el_btn_signin.click()
+            driver.implicitly_wait(20)
+        except:
+            logger.error('Ошибка при клике на кнопку "Войти"')
+    except:
+        logger.debug(f'Кнопка "Войти" не найдена')
 
 
 def find_label_account_not_exist() -> bool:
@@ -297,6 +319,7 @@ def find_label_account_not_exist() -> bool:
     """
     logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
     try:
+        driver.implicitly_wait(3)
         el_find_label_account_not_exist = driver.find_element(By.CSS_SELECTOR, '#root > div:nth-child(2) > div > div > div > div > div > form > div:nth-child(2) > div:nth-child(2) > div.login-row.username.login-row_error > div > div > div > div.error-0-2-59 > small')
         # Логин введен некорректно или удален
         if el_find_label_account_not_exist.text == 'Такой аккаунт не зарегистрирован':
@@ -313,9 +336,14 @@ def find_field_and_insert_passwd_text(passwd: str) -> None:
     """
     logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
     try:
-        el_field_login_passwd = driver.find_element(By.CSS_SELECTOR, "#root > div:nth-child(2) > div > div > div > div > div > form > div:nth-child(2) > div > div.login-row.password.fill-icon > div > div > div > div > div > input")
+        driver.implicitly_wait(10)
+        el_field_login_passwd = driver.find_element(By.CSS_SELECTOR, "#root > div:nth-child(2) > div > div > div > div > div > form > div:nth-child(2) > div:nth-child(4) > div.login-row.password.fill-icon > div > div > div > div > div > input")
         logger.debug(f'На странице было найдено поле passwd')
         try:
+            el_field_login_passwd.click()
+            el_field_login_passwd.clear()
+            el_field_login_passwd.send_keys(Keys.CONTROL,"a")
+            el_field_login_passwd.send_keys(Keys.BACKSPACE)
             el_field_login_passwd.send_keys(passwd , Keys.ENTER)
         except:
             logger.error('Ошибка при заполнении поле passwd')
@@ -328,25 +356,32 @@ def find_field_retry_psw_and_insert_passwd_text(passwd: str) -> None:
     """
     logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
     try:
-        el_field_login_passwd = driver.find_element(By.CSS_SELECTOR, "#root > div:nth-child(2) > div > div > div > div > div > form > div:nth-child(2) > div > div.login-row.password.fill-icon > div > div > div > div > div > input")
+        driver.implicitly_wait(3)
+        el_field_login_passwd = driver.find_element(By.CSS_SELECTOR, "#root > div:nth-child(2) > div > div > div > div > div > form > div:nth-child(2) > div:nth-child(4) > div.login-row.password.fill-icon > div > div > div > div > div > input")
         logger.debug(f'На странице было найдено поле passwd')
         try:
-            el_field_login_passwd.send_keys(passwd)  # , Keys.ENTER
+            el_field_login_passwd.click()
+            el_field_login_passwd.clear()
+            el_field_login_passwd.send_keys(Keys.CONTROL,"a")
+            el_field_login_passwd.send_keys(Keys.BACKSPACE)
+            el_field_login_passwd.send_keys(passwd , Keys.ENTER)
         except:
             logger.error('Ошибка при заполнении поле passwd')
     except:
         logger.debug(f'Поле passwd не найдено')
 
 
-def find_label_invalid_login(driver :object) -> None:
-    """Проверяет есть ли сообщение passwd и вставляет текстовое значение пароля.
+def find_label_invalid_psw(driver :object) -> None:
+    """Проверяет есть ли сообщение неверный пароль.
     """
     logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
     try:
-        el_field_invalid_login = driver.find_element(By.ID, 'field:input-login:hint')
+        driver.implicitly_wait(3)
+        el_field_invalid_psw = driver.find_element(By.CSS_SELECTOR, '#root > div:nth-child(2) > div > div > div > div > div > form > div:nth-child(2) > div:nth-child(4) > div.login-row.password.fill-icon.login-row_error > div > div > div.error-0-2-71 > small > div')
+        if el_field_invalid_psw.text == 'Неверный пароль, попробуйте ещё раз' and el_field_invalid_psw.is_displayed():
         # Логин введен некорректно или удален
-        logger.info(f'На странице было найдено поле неверный логин')
-        dict_with_data["Status_mailru"] = 'invalid'
+            logger.info(f'На странице было найдено поле неверный логин')
+            dict_with_data["Status_mailru"] = 'invalid'
     except:
         logger.debug(f'Поле неверный логин не найдено')
 
@@ -356,16 +391,20 @@ def find_el_first_email_and_click(driver :object) -> None:
     """
     logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
     try:
+        driver.implicitly_wait(5)
         el_first_mail = driver.find_element(By.XPATH, '//*[@id="app-canvas"]/div/div[1]/div[1]/div/div[2]/span/div[2]/div/div/div/div/div/div[3]/div/div/div/div[1]/div/div/a[1]')
+        el_first_mail.click()
         logger.info(f'Входящее письмо найдено. Открытие...')
-        try:
-            el_first_mail.click()
-        except:
-            logger.error(f'ошибка при клике на письмо')
-        # href = el_first_mail.get_attribute('href')
-        # get_web_page_in_browser(url=href)
     except:
-        logger.debug(f'Поле неверный логин не найдено')
+        try:
+            elems = driver.find_elements(By.XPATH, '//a[@href]')
+            for elem in elems:
+                if 'inbox/1' in elem.get_attribute("href"):
+                    get_web_page_in_browser(url=elem.get_attribute("href"))
+                    logger.info(f'Ссылка на входящее письмо найдено. Открытие...')
+                    break
+        except:
+            logger.error(f'Не найдено входящее письмо.')
 
 
 def find_field_invalid_password(driver :object) -> bool:
@@ -375,8 +414,9 @@ def find_field_invalid_password(driver :object) -> bool:
     try:
         # el_field_invalid_passwd = driver.find_element(By.ID, 'field:input-passwd:hint')
         el_field_invalid_passwd = driver.find_element(By.CSS_SELECTOR, '#root > div:nth-child(2) > div > div > div > div > div > form > div:nth-child(2) > div > div.login-row.password.fill-icon > div > div > div > div > div > input')
-        logger.info(f'На странице было поле неверный пароль')
-        return True
+        if el_field_invalid_passwd.is_displayed():
+            logger.info(f'На странице было поле неверный пароль')
+            return True
     except:
         logger.debug(f'Поле неверный пароль не найдено')
 
@@ -650,7 +690,7 @@ def find_captcha_on_css_and_save_img(el_css: str, driver: object):
         # url_for_image_captcha = el_сaptcha.get_attribute('src')
         # print(f'url_for_image_captcha -- {url_for_image_captcha}')
         # image_captcha = requests.get(url_for_image_captcha)
-        # sleep(2)
+        # sleep(4)
         with open('image_captcha.png', 'wb') as f:
             f.write(el_сaptcha.screenshot_as_png)
         return el_сaptcha.screenshot_as_png
@@ -667,17 +707,20 @@ def check_and_hack_captcha(driver :object, el_css: str):
     except:
         logger.error(f'Каптча не найдена на странице')
     if image_el_сaptcha_screenshot:
-            captcha_code = decrypt_captcha_deform_text(PARAM_DICT['API_KEY_FOR_RUCAPTCHA'], file_name='image_captcha.png')
-            if captcha_code:
-                logger.info(f'Каптча расшифрована. Кодовая фраза: {captcha_code}')
-                # Заполнить поле каптча
-                find_field_by_css_and_paste_text(field_css='#app > div > div > form > div.b-panel__content > div > div > input', text_for_field=captcha_code, press_key_enter=True)
-                sleep(randint(4, 6))
+            if PARAM_DICT["ENABLE_HACK_CAPTCHA"] == 'True':
+                captcha_code = decrypt_captcha_deform_text(PARAM_DICT['API_KEY_FOR_RUCAPTCHA'], file_name='image_captcha.png')
+                if captcha_code:
+                    logger.info(f'Каптча расшифрована. Кодовая фраза: {captcha_code}')
+                    # Заполнить поле каптча
+                    find_field_by_css_and_paste_text(field_css='#app > div > div > form > div.b-panel__content > div > div > input', text_for_field=captcha_code, press_key_enter=True)
+                    sleep(randint(4, 6))
+            else:
+                dict_with_data["Status_mailru"] == 'adv captcha'
+                return
     # Если каптча во второй раз не была найдена, считаем результат успешным
     try:
         image_el_сaptcha_screenshot = find_captcha_on_css_and_save_img(el_css=el_css, driver=driver)
         logger.debug(f'После попытки расшифровки повторно каптча не найдена.')
-        return 
     except:
         return
 
@@ -719,6 +762,7 @@ def find_and_click_btn_sent_mail_for_login(driver :object) -> None:
     """
     logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
     try:
+        driver.implicitly_wait(4)
         el_btn_sent_mail_for_login = driver.find_element(By.CSS_SELECTOR, "#root > div > div.passp-page > div.passp-flex-wrapper > div > div > div.passp-auth-content > div.passp-route-forward > div > div > form > div > div.layout_controls > div > button")
         if el_btn_sent_mail_for_login:
             logger.debug(f'На странице была найдена кнопка отправить письмо для входа. Кликаю')
@@ -735,7 +779,7 @@ def check_status_auth_yandex(driver :object) -> bool:
     logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
     try:
         get_web_page_in_browser(url=URL_YA_ID)
-        sleep(2)
+        sleep(4)
         cur_avatar_obj = None
         # print('Проверяю аватар')
         el_avatar1 = check_avatar1_yandex_on_page_and_click(driver=driver)  # аватар 1 вида
@@ -806,6 +850,7 @@ def find_window_make_its_you_and_click_its_me(driver: object) -> None:
     # except:
     #     logger.debug(f'Кнопки Включить уведомления не найдено.')
     try:  # селектор кнопки Это я
+        driver.implicitly_wait(2)
         el_btn_its_me_in_push_window = driver.find_element(By.CSS_SELECTOR, "#root > div:nth-child(2) > div > div > div > div > div > button.base-0-2-62.primary-0-2-76.auto-0-2-88")
         logger.debug(f'На странице была найдена кнопка Это я".')
         try:
@@ -815,12 +860,6 @@ def find_window_make_its_you_and_click_its_me(driver: object) -> None:
     except:
         logger.debug(f'Кнопки Это я уведомлений не найдено.')
         return
-    # Если кнопка Это я кликнута успешно, то
-    # Повторно ввести пароль
-    find_field_retry_psw_and_insert_passwd_text(passwd=dict_with_data['Password'])
-    # Нажать кнопку я не робот
-    find_and_click_captcha_iam_not_robot(driver=driver)
-    # !!!!!!!!!!!!! ПОПРАВИТЬ Здесь возникает проблема с поиском чекбокса я не робот
 
 
 def find_window_add_phone_number_and_click_cancel(driver :object) -> None:
@@ -852,7 +891,6 @@ def check_account_mailru():
             logger.critical('Ошибка при инициализации экземпляра driver')
 
         get_web_page_in_browser(url=URL_MAIL)
-        sleep(2)
         # find_and_click_captcha_iam_not_robot()
         # sleep(0.5)
         # find_and_click_btn_close_window()
@@ -865,43 +903,77 @@ def check_account_mailru():
         # find_and_click_btn_email()
         # sleep(randint(1, 3))
         find_field_and_insert_email_text_on_page_mail(login_email=dict_with_data['Login'])
-        sleep(1)
         find_and_click_btn_input_psw()
-        sleep(randint(1, 3))
+        find_and_click_btn_sign_in()
         account_not_exist = find_label_account_not_exist()
         if account_not_exist:
             dict_with_data["Status_mailru"] = 'not exist'
         else:
             find_field_and_insert_passwd_text(passwd=dict_with_data['Password'])
-            sleep(3)
+            # Проверка Неверный пароль
+            try:
+                driver.implicitly_wait(3)
+                elems = driver.find_elements(By.TAG_NAME, 'small')
+                for el in elems:
+                    if el.text == 'Неверный пароль, попробуйте ещё раз' and el.is_displayed():
+                        dict_with_data['Status_mailru'] = 'invalid'
+                        break
+            except: pass
             find_window_make_its_you_and_click_its_me(driver=driver)
-            sleep(1)
-            find_field_and_insert_passwd_text(passwd=dict_with_data['Password'])
-            sleep(1)
-            if find_field_invalid_password(driver=driver):
-                dict_with_data["Status_mailru"] = 'invalid'
-            find_and_click_captcha_iam_not_robot(driver=driver)
-            hack_recaptcha_used_audio_file(driver=driver)
-            find_label_invalid_login(driver=driver)
+            find_field_retry_psw_and_insert_passwd_text(passwd=dict_with_data['Password'])
+            # find_and_click_captcha_iam_not_robot(driver=driver)
+            # hack_recaptcha_used_audio_file(driver=driver)
+            # find_advanced_captcha(driver=driver)
+            # find_magicpromopage_title_qr_code(driver=driver)
+            try:
+                driver.implicitly_wait(3)
+                el_captcha = driver.find_element(By.ID, "recaptcha-anchor-label")
+                el_captcha.click()
+                dict_with_data['Status_mailru'] = 'adv captcha'
+                if PARAM_DICT['ENABLE_HACK_CAPTCHA'] == 'True':
+                    hack_recaptcha_use_twocaptcha(driver=driver,
+                                                api_key_for_rucaptcha=PARAM_DICT['API_KEY_FOR_RUCAPTCHA'],
+                                                current_url=driver.current_url)
+            except:
+                try:
+                    elems = driver.find_elements(By.TAG_NAME, 'small')
+                    for el in elems:
+                        if el.text == 'Проверка не пройдена' and el.is_displayed():
+                            dict_with_data['Status_mailru'] = 'adv captcha'
+                            break
+                except: pass
+
+            find_window_make_its_you_and_click_its_me(driver=driver)
+
+            if PARAM_DICT['ENABLE_HACK_CAPTCHA'] == 'True':
+                # Ищем и решаем каптчу картинку два раза
+                check_and_hack_captcha(driver=driver, el_css='#app > div > div > form > div.b-panel__content > div > img')
+                sleep(3)
+                check_and_hack_captcha(driver=driver, el_css='#app > div > div > form > div.b-panel__content > div > img')
+            
             # if find_image2fa_entertype():
             #     find_and_click_btn_psw()
-            #     sleep(1)
+            #     sleep(3)
             #     find_field_and_insert_passwd_text(passwd=dict_with_data['Password'])
-                
-            find_advanced_captcha(driver=driver)
-            find_magicpromopage_title_qr_code(driver=driver)
 
-            # Ищем и решаем каптчу картинку два раза
-            check_and_hack_captcha(driver=driver, el_css='#app > div > div > form > div.b-panel__content > div > img')
-            sleep(2)
-            check_and_hack_captcha(driver=driver, el_css='#app > div > div > form > div.b-panel__content > div > img')
-            
-            # check_security_question_and_insert_answer_text(security_answer=dict_with_data['Answer'])
-            sleep(2)
+            find_field_and_insert_passwd_text(passwd=dict_with_data['Password'])
+            find_label_invalid_psw(driver=driver)
+            # Проверка на неверный пароль
+            try:
+                driver.implicitly_wait(2)
+                elems = driver.find_elements(By.TAG_NAME, 'small')
+                for el in elems:
+                    if el.text == 'Неверный пароль, попробуйте ещё раз' and el.is_displayed():
+                        dict_with_data['Status_mailru'] = 'invalid'
+                        break
+            except: pass
             find_window_enable_push_in_browser_and_click_cancel(driver=driver)
+            
             cur_avatar_obj = None
+            if dict_with_data['Status_mailru'] == 'adv captcha':
+                pass
             # Если вход возможен только по коду из смс
-            if check_entry_only_sms(driver=driver):
+            elif check_entry_only_sms(driver=driver):
                 dict_with_data["Status_mailru"] = 'sms'
             elif check_need_recovery(driver=driver):
                 dict_with_data["Status_mailru"] = 'recovery'
@@ -956,18 +1028,18 @@ def check_account_mailru():
                 if  PARAM_DICT["USED_NAME_FROM_MAILRU"] == 'True':
                     try:
                         get_web_page_in_browser(url='https://id.mail.ru/profile?utm_campaign=mailid&utm_medium=ph&from=headline')
-                        sleep(5)
+                        driver.implicitly_wait(5)
                         el_full_name = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[2]/div/div[1]/div/div[4]/h4')
                         first_name = el_full_name.text.split()[0]
                         last_name = el_full_name.text.split()[1]
                         dict_with_data["first_name"] = first_name
                         dict_with_data["last_name"] = last_name
                         logger.info(f'Извлечены личные данные: {first_name} {last_name}')
+                        # get_web_page_in_browser(URL_MAIL)
                     except:
                         pass
                     finally:
                         get_web_page_in_browser(url='https://trk.mail.ru/c/veoz41')
-                        sleep(3)
             # Если статус аккаунта не ок, то закрываем брузер (переход к следующему аккаунту)
             else:
             # print(user_data)
@@ -989,16 +1061,16 @@ def create_on_mailru_psw_for_external_apps(driver :object) -> None:
     """
     logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
     get_web_page_in_browser(url='https://account.mail.ru/user/2-step-auth/passwords?back_url=https%3A%2F%2Fid.mail.ru%2Fsecurity')
-    sleep(2)
+    sleep(4)
     get_web_page_in_browser(url='https://account.mail.ru/user/2-step-auth/passwords/add')
-    sleep(2)
+    sleep(4)
     find_field_by_css_and_paste_text_func2_for_many_css(field_css='#name_',
                                      text_for_field='Psw_mailru_for_app',
                                      press_key_enter=True
                                      )
     # decrypt_recaptcha_v2_iam_not_robot(driver=driver,
                                     #    api_key_for_rucaptcha=PARAM_DICT["API_KEY_FOR_RUCAPTCHA"])
-    sleep(1)
+    sleep(3)
     hack_recaptcha_used_audio_file(driver=driver)
     
     save_pkl_json_excel_cookies(driver=driver, url='https://mail.ru/')
@@ -1029,16 +1101,17 @@ def click_smart_captcha():
     """Кликает на смарт каптчу"""
     try:  # если появляется smart captcha
         # находим надпись smart captcha (если ее нет, то попадаем в except)
-        driver.find_element(By.CSS_SELECTOR, "#checkbox-captcha-form > div.Spacer.Spacer_auto-gap_bottom > div > div.Text.Text_color_ghost.Text_weight_regular.Text_typography_control-s.CaptchaLinks.CheckboxCaptcha-Links > div > a")
-        driver.find_element(By.CSS_SELECTOR, "#js-button").click()
+        driver.implicitly_wait(2)
+        driver.find_element(By.ID, "js-button").click()
+        # driver.find_element(By.CSS_SELECTOR, "#checkbox-captcha-form > div.Spacer.Spacer_auto-gap_bottom > div > div.Text.Text_color_ghost.Text_weight_regular.Text_typography_control-s.CaptchaLinks.CheckboxCaptcha-Links > div > a").click()
         try:
-            text_captcha = driver.find_element(By.CSS_SELECTOR, "#advanced-captcha-form > div > div > div.AdvancedCaptcha-SilhouetteTask > span")
-            if text_captcha:
-                logger.info('Обнаружена smart captcha - решить не удется')
-                dict_with_data["Status_yandex"] = 'no status'
+            driver.implicitly_wait(2)
+            text_captcha = driver.find_element(By.CSS_SELECTOR, "#checkbox-captcha-form > div.Spacer.Spacer_auto-gap_bottom > div > div.Text.Text_color_ghost.Text_weight_regular.Text_typography_control-s.CaptchaLinks.CheckboxCaptcha-Links > div > a")
+            if 'aptcha' in text_captcha.text:
+                logger.info('Обнаружена smart captcha - решить не удается')
+                dict_with_data["Status_yandex"] = 'adv captcha'
         except:
             logger.info('Вероятно, smart captcha решена успешно. Ожидание загрузки страницы...')
-            sleep(10)
     except:
         logger.debug('Возможно, smart captcha не найдена')
 
@@ -1047,7 +1120,7 @@ def save_pkl_json_excel_cookies(driver, url):
     """Сохраняет все куки"""
     logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
     driver.switch_to.window(driver.window_handles[-1])
-    sleep(1)
+    sleep(3)
     # Сохранить куки
     get_web_page_in_browser(url=url)
     sleep(5)
@@ -1076,57 +1149,64 @@ def auth_on_yandexru_with_email_verify(driver :object) -> None:
     """Производит авторизацию в passpot.yandex.ru с запросом кода подтверждения на эл почту.
     """
     logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
-
-    # Open a new window
-    driver.execute_script("window.open('');")
+    # Opens a new tab and switches to new tab
+    driver.switch_to.new_window('tab')
+    # driver.close()
+    # driver.switch_to.new_window('tab')
+    # Всплывающее окно chrome
+    # driver.execute_script("window.open('');")
     # Switch to the new window in new Tab
-    driver.switch_to.window(driver.window_handles[1])
+    # driver.switch_to.window(driver.window_handles[1])
     get_web_page_in_browser(url=URL_YA_AUTH)
     click_smart_captcha()
-    sleep(2)
-    hack_recaptcha_used_audio_file(driver=driver)
-    sleep(2)
-    try:
+    # hack_recaptcha_used_audio_file(driver=driver)
+    # sleep(4)
+
+    try:  # Заполнение поля логин (почта)
         find_field_and_insert_email_text_on_page_yandex(login_email=dict_with_data["Login"])
     except:
         dict_with_data["Status_yandex"] = 'no status'
         return
-    sleep(1)
-    find_and_click_captcha_iam_not_robot(driver=driver)
-    sleep(5)
-    hack_recaptcha_used_audio_file(driver=driver)
+    
     sleep(2)
+    try:  # Проверка на ошибку: Такой логин не подойдет
+        if (driver.find_element(By.ID, 'field:input-login:hint').is_displayed() and
+            driver.find_element(By.ID, 'field:input-login:hint').text == 'Такой логин не подойдет'):
+            dict_with_data["Status_yandex"] = 'invalid'
+            return
+    except: pass
+
+    find_and_click_captcha_iam_not_robot(driver=driver)
+    
+    # hack_recaptcha_used_audio_file(driver=driver)
     find_field_by_css_and_paste_text(field_css='#passp-field-passwd',
                                      text_for_field=dict_with_data["Password"],
                                      press_key_enter=True)
-    sleep(1)
+    
     find_and_click_btn_sent_mail_for_login(driver=driver)
     # Входите по лицу или отпечатку пальца - Не сейчас
     try:
+        driver.implicitly_wait(1)
         driver.find_element(By.CSS_SELECTOR, '#root > div > div.passp-page > div.passp-flex-wrapper > div > div > div.passp-auth-content > div.passp-route-forward > div > div > div > div:nth-child(5) > button').click()
-    except:
-        pass
-    sleep(3)
-
+    except: pass
+    
     # Проверяем - авторизация по коду из письма?
-    is_auth_with_code_from_email = None
     try:
-        is_auth_with_code_from_email = driver.find_element(By.ID, 'passp-field-phoneCode')
+        driver.implicitly_wait(3)
+        driver.find_element(By.ID, 'passp-field-phoneCode')
         logger.info(f'Яндекс требует авторизации по коду из письма')
-    except:
-        pass
-    # Switch back to the first tab
-    driver.switch_to.window(driver.window_handles[0])
-    timer_in_consol(3)
-    driver.refresh()
-    # driver.find_element_by_tag_name('body').send_keys(Keys.COMMAND + 'r')
-    sleep(3)
-    find_el_first_email_and_click(driver=driver)
-    sleep(3)
-    if is_auth_with_code_from_email:  # если авторизация по коду из письма
+        # Переход на 1 вкладку
+        driver.switch_to.window(driver.window_handles[0])
+        # get_web_page_in_browser(url=URL_MAIL)
+        # timer_in_consol(3)
+        driver.refresh()
+        # driver.find_element_by_tag_name('body').send_keys(Keys.COMMAND + 'r')
+        find_el_first_email_and_click(driver=driver)
+
         secret_code = None
         # По селектору обычно не находится, тк меняется номер body
         try:
+            driver.implicitly_wait(5)
             el_code = driver.find_element(By.CSS_SELECTOR, '#style_17115248880402105534_BODY > div > table > tbody > tr > td > table:nth-child(2) > tbody > tr > td > p:nth-child(3) > b')
             if int(el_code.text) in range(0, 1000000):
                 secret_code = el_code.text
@@ -1151,6 +1231,7 @@ def auth_on_yandexru_with_email_verify(driver :object) -> None:
         if secret_code:
             try:
                 driver.switch_to.window(driver.window_handles[-1])
+                driver.implicitly_wait(2)
                 el_field = driver.find_element(By.ID, 'passp-field-phoneCode')
                 el_field.click()
                 try:
@@ -1161,26 +1242,27 @@ def auth_on_yandexru_with_email_verify(driver :object) -> None:
                 # find_field_by_css_and_paste_text(field_css=)
             except:
                 logger.error(f'Не удалось найти поле код')
-    else:  # иначе авторизация по кнопке
-        elements = driver.find_elements(By.TAG_NAME, "a")
-        url_login_yandex = ''
-        for el in elements:
-            try:
-                link = el.get_attribute("href")
-                if 'https://passport.yandex.ru/auth' in link:
-                    url_login_yandex = link
-                    logger.info(f'Секретная ссылка извлечена успешно:\n{url_login_yandex}')
-                    break
-            except:
-                pass
-        get_web_page_in_browser(url=url_login_yandex)
-        sleep(3)
-        click_smart_captcha()
-        # Клик по кнопке войти
-        driver.find_element(By.CSS_SELECTOR, "#root > div > div.passp-page > div.passp-flex-wrapper > div > div > div.passp-auth-content > div:nth-child(3) > div > div > div.auth_letter_action-buttons > div:nth-child(2) > button").click()
-        sleep(2)
-    driver.switch_to.window(driver.window_handles[-1])
-    sleep(1)
+        else:  # иначе авторизация по кнопке
+            driver.implicitly_wait(1)
+            elements = driver.find_elements(By.TAG_NAME, "a")
+            url_login_yandex = ''
+            for el in elements:
+                try:
+                    link = el.get_attribute("href")
+                    if 'https://passport.yandex.ru/auth' in link:
+                        url_login_yandex = link
+                        logger.info(f'Секретная ссылка извлечена успешно:\n{url_login_yandex}')
+                        break
+                except:
+                    pass
+            get_web_page_in_browser(url=url_login_yandex)
+            sleep(3)
+            click_smart_captcha()
+            # Клик по кнопке войти
+            driver.implicitly_wait(2)
+            driver.find_element(By.CSS_SELECTOR, "#root > div > div.passp-page > div.passp-flex-wrapper > div > div > div.passp-auth-content > div:nth-child(3) > div > div > div.auth_letter_action-buttons > div:nth-child(2) > button").click()
+    except:  # авторизация не по коду из письма
+        pass
 
     # Пробуем авторизоваться в яндекс (при необходимости вводим имя, фамилию, пароль)
     try:
@@ -1207,30 +1289,33 @@ def auth_on_yandexru_with_email_verify(driver :object) -> None:
                                         # dict_with_data['Login'].split('@')[0][::-1]
                                         text_for_field=last_name,
                                         press_key_enter=True)
-        sleep(1)
         # Пароль
         find_field_by_css_and_paste_text(field_css='#passp-field-password',
-                                         text_for_field=dict_with_data['Password'],
-                                         press_key_enter=False)
-        sleep(0.5)
+                                        text_for_field=dict_with_data['Password'],
+                                        press_key_enter=False)
         # Далее
+        driver.implicitly_wait(3)
         driver.find_element(By.CSS_SELECTOR, '#root > div > div.passp-page > div.passp-flex-wrapper > div > div > div.passp-auth-content > div.passp-route-forward > div > div > form > div > div > div.passp-button.passp-lite__password-submit > button').click()
-        sleep(1)
+
         # Зарегистрироваться
+        driver.implicitly_wait(3)
         driver.find_element(By.CSS_SELECTOR, '#root > div > div.passp-page > div.passp-flex-wrapper > div > div > div.passp-auth-content > div.passp-route-forward > div > div > form > div.passp-button.passp-lite__password-submit > button').click()
         dict_with_data["first_name"] = first_name
         dict_with_data["last_name"] = last_name
-        sleep(2)
+
         # Email
+        driver.implicitly_wait(2)
         find_field_by_css_and_paste_text(field_css='#passp-field-email',
-                                         text_for_field=dict_with_data["Login"],
-                                         press_key_enter=False)
+                                        text_for_field=dict_with_data["Login"],
+                                        press_key_enter=False)
+        
         # Продолжить
-        driver.find_element(By.CSS_SELECTOR, '#passp\:email\:controls\:next').click()
-        sleep(2)
-    except:
-        pass
-    sleep(1)
+        try:
+            driver.implicitly_wait(2)
+            driver.find_element(By.CSS_SELECTOR, '#passp\:email\:controls\:next').click()
+        except: pass
+    except Exception as exc:
+        logger.info(f'При авторизации возникла ошибка: {exc}')
 
     # Проверяем успешная ли авторизация в яндексе
     status = check_status_auth_yandex(driver=driver)
@@ -1238,41 +1323,42 @@ def auth_on_yandexru_with_email_verify(driver :object) -> None:
         save_pkl_json_excel_cookies(driver=driver, url=URL_YA_ID)
         
         # ---------------- работа с подпиской на дзен -----------------
-        get_web_page_in_browser(url=URL_YA_DZEN)
-        sleep(5)
-        try:
-            ava = driver.find_element(By.CSS_SELECTOR, '#dzen-header > div.desktop-base-header__controls-3o.desktop-base-header__isMorda-mX > div.desktop-base-header__profileButton-bf.desktop-base-header__isMorda-mX.desktop-base-header__isAuthorized-Yz')
-            if ava:
-                ava.click()
-                sleep(2)
-                try:
-                    btn_create_post = driver.find_element(By.CLASS_NAME, "menu-items__createPublication-2b")
-                    if btn_create_post:  # Если есть кнопка создать публикацию есть, значит акк уже привязан к дзен
-                        dict_with_data["Dzen_status"] = 'ok'
-                        logger.info(f'Аккаунт {dict_with_data["Login"]} уже подключен к Дзен.')
-                except:
-                    logger.debug('кнопка создать пост не найдена')
-                    try:
-                        # Кнопки Это мой аккаунт и Разрешить доступ
-                        allow_access = driver.find_element(By.CSS_SELECTOR, '#dzen-header > div.desktop-base-header__controls-3o.desktop-base-header__isMorda-mX > div.desktop-base-header__profileButton-bf.desktop-base-header__isMorda-mX.desktop-base-header__isAuthorized-Yz > div.Popup2.Popup2_visible.Popup2_target_anchor.Popup2_view_default.Popup2_hasCloseButton > div > button.base-button__rootElement-12.base-button__isFluid-Cq.base-button__xl-UC.base-button__accentPrimary-3e')
-                        if allow_access:
-                            allow_access.click()
-                            sleep(2)
-                            driver.switch_to.window(driver.window_handles[-1])
-                            driver.find_element(By.CSS_SELECTOR, '#root > div > div > div.Approval-card > div.Approval-controls > div > button.Button2.Button2_size_l.Button2_view_action.Button2_width_max.ApprovalControls-item').click()
-                            sleep(2)
-                            dict_with_data["Dzen_status"] = 'ok'
-                            logger.info(f'Подключение к Дзен аккаунта {dict_with_data["Login"]} успешно выполнено.')
-                    except:
-                        dict_with_data["Dzen_status"] = 'fail'
-                        logger.info(f'Подключение к Дзен аккаунта {dict_with_data["Login"]} успешно выполнено.')
-        except:
-            dict_with_data["Dzen_status"] = 'no status'
-            logger.debug(f'Статус подключения к Дзен не установлен')
+        # get_web_page_in_browser(url=URL_YA_DZEN)
+        # sleep(5)
+        # try:
+        #     ava = driver.find_element(By.CSS_SELECTOR, '#dzen-header > div.desktop-base-header__controls-3o.desktop-base-header__isMorda-mX > div.desktop-base-header__profileButton-bf.desktop-base-header__isMorda-mX.desktop-base-header__isAuthorized-Yz')
+        #     if ava:
+        #         ava.click()
+        #         sleep(4)
+        #         try:
+        #             btn_create_post = driver.find_element(By.CLASS_NAME, "menu-items__createPublication-2b")
+        #             if btn_create_post:  # Если есть кнопка создать публикацию есть, значит акк уже привязан к дзен
+        #                 dict_with_data["Dzen_status"] = 'ok'
+        #                 logger.info(f'Аккаунт {dict_with_data["Login"]} уже подключен к Дзен.')
+        #         except:
+        #             logger.debug('кнопка создать пост не найдена')
+        #             try:
+        #                 # Кнопки Это мой аккаунт и Разрешить доступ
+        #                 allow_access = driver.find_element(By.CSS_SELECTOR, '#dzen-header > div.desktop-base-header__controls-3o.desktop-base-header__isMorda-mX > div.desktop-base-header__profileButton-bf.desktop-base-header__isMorda-mX.desktop-base-header__isAuthorized-Yz > div.Popup2.Popup2_visible.Popup2_target_anchor.Popup2_view_default.Popup2_hasCloseButton > div > button.base-button__rootElement-12.base-button__isFluid-Cq.base-button__xl-UC.base-button__accentPrimary-3e')
+        #                 if allow_access:
+        #                     allow_access.click()
+        #                     sleep(4)
+        #                     driver.switch_to.window(driver.window_handles[-1])
+        #                     driver.find_element(By.CSS_SELECTOR, '#root > div > div > div.Approval-card > div.Approval-controls > div > button.Button2.Button2_size_l.Button2_view_action.Button2_width_max.ApprovalControls-item').click()
+        #                     sleep(4)
+        #                     dict_with_data["Dzen_status"] = 'ok'
+        #                     logger.info(f'Подключение к Дзен аккаунта {dict_with_data["Login"]} успешно выполнено.')
+        #             except:
+        #                 dict_with_data["Dzen_status"] = 'fail'
+        #                 logger.info(f'Подключение к Дзен аккаунта {dict_with_data["Login"]} успешно выполнено.')
+        # except:
+        #     dict_with_data["Dzen_status"] = 'no status'
+        #     logger.debug(f'Статус подключения к Дзен не установлен')
         # ----------- конец работы с подпиской на Дзен ----------------
 
     else:
-        logger.error('Авторизация на яндекс не была успешной')
+        logger.error('Авторизация на яндекс не была успешной.')
+        logger.info(f'Текущий аккаунт имеет статус {dict_with_data["Status_yandex"]}')
 
 
 def check_mailru_accounts_main():
@@ -1296,7 +1382,7 @@ def check_mailru_accounts_main():
                 try: 
                     if len(dict_with_data) != 0:  # если словарь не пустой (был заполнен данными из файла)
                         # если статус аккаунта соответствует проверяемому (из файла config.txt), None или неизвестный
-                        if (dict_with_data["Status_mailru"] == PARAM_DICT['CHECKED_STATUS']) or (dict_with_data["Status_mailru"] == None) or (dict_with_data["Status_mailru"] not in LIST_WITH_STATUS_ACC):
+                        if (dict_with_data["Status_mailru"] == PARAM_DICT['CHECKED_STATUS']) or (dict_with_data["Status_mailru"] is None) or (dict_with_data["Status_mailru"] not in LIST_WITH_STATUS_ACC):
                             # Начинаем проверку аккаунта, получаем после проверки обновленные данные
                             check_account_mailru()
 
@@ -1331,15 +1417,16 @@ def check_mailru_accounts_main():
                             logger.info(f'Попытка сохранить книгу excel')
                             workbook.save(filename='combined_mailru.xlsx')  # сохранить xlsx файл
 
-
                             if dict_with_data["Status_mailru"] == 'ok':
                                 auth_on_yandexru_with_email_verify(driver=driver)
                                 logger.debug(f'Получен словарь {dict_with_data}')
                                 # Записать данные (куки яндекс) в xlsx файл
-                                if dict_with_data["Dzen_status"] == 'ok':
-                                    cur_cell = worksheet.cell(row=current_row, column=8, value=dict_with_data["Dzen_status"])
+                                if dict_with_data["Status_yandex"]:
+                                    cur_cell = worksheet.cell(row=current_row, column=4, value=dict_with_data["Status_yandex"])
                                 if dict_with_data["Cookies_yandex"]:
                                     cur_cell = worksheet.cell(row=current_row, column=5, value=str(dict_with_data["Cookies_yandex"]))
+                                if dict_with_data["Dzen_status"]:
+                                    cur_cell = worksheet.cell(row=current_row, column=8, value=dict_with_data["Dzen_status"])
                                 if dict_with_data["first_name"]:
                                     cur_cell = worksheet.cell(row=current_row, column=9, value=str(dict_with_data["first_name"]))
                                 if dict_with_data["last_name"]:
@@ -1360,51 +1447,43 @@ def check_mailru_accounts_main():
                                 shutil.copyfile('combined_mailru.xlsx', f'backups/backup_combined_mailru.xlsx')
                                 logger.info(f'Создан backup файла combined_mailru.xlsx')
                             logger.debug(f'файл xlsx сохранен')
-
-                            # удаляем cookies
-                            driver.delete_all_cookies()
                             # sleep(0.5)
                             if PARAM_DICT['NEED_PAUSE_BEFORE_CLOSED_BROWSER']  == 'True':  # Строка, так как из текстового конфига
                                 pause = input('Нажмите любую клавишу для продолжения')
-                            driver.close()  # Закрытие окна браузера
-                            driver.quit()  # Выход
                             # print(f'Обновленные данные {dict_with_data}')
 
-                        # если статус аккаунта ok, переходим к следующему
-                        if (dict_with_data["Status_mailru"] == 'ok') and  (PARAM_DICT['CHECKED_STATUS'] != 'ok'):
-                            logger.info('Аккаунт со статусом "ok". Переход к следующему.')
-                except:
-                    logger.error(f'При проверке {dict_with_data["Login"]} возникла непредвиденная ошибка')
-                    try:
-                        driver.close()  # Закрытие окна браузера
-                        driver.quit()  # Выход
-                    except:
-                        pass
-                finally:
-                    # Переход на следующую строку
-                    current_row += 1
-                    cur_cell = worksheet.cell(row=current_row, column=1)  
-                    # pause = input('Нажмите любую клавишу для продолжения работы: ')
-                    if cur_cell.value is None:
-                        logger.info(f'Обнаружена пустая строка - {current_row}.')
-                        need_retry_check = False  # нужна ли повторная проверка
-                        for r in range(2, current_row):
-                            c = worksheet.cell(row=r, column=LIST_WITH_COLUMNS_COMBINED.index('Status_yandex')+1)
-                            # если значение статуса не содержится в словаре со статусами исключая no status
-                            if c.value not in LIST_WITH_STATUS_ACC[1: ]:
-                                need_retry_check = True
-                        if need_retry_check:
-                            current_row = 2
-                            logger.info(f'Начинаю повторную проверку со строки {current_row}.')
-                            cur_cell = worksheet.cell(row=current_row, column=1)
-                        else:
-                            print('Проверены все аккаунты из списка.')
-                            shutil.copyfile('combined_mailru.xlsx', f'backups/backup_combined_mailru.xlsx')
-                            logger.info(f'Создан backup файла combined_mailru.xlsx')
-                            break
+                            # удаляем cookies
+                            if driver:
+                                driver.delete_all_cookies()
+                                driver.close()  # Закрытие окна (вкладки) браузера
+                                driver.quit()  # Выход
+
+                except Exception as exc:
+                    logger.error(f'При проверке {dict_with_data["Login"]} возникла ошибка {exc}')
+                # Переход на следующую строку
+                current_row += 1
+                cur_cell = worksheet.cell(row=current_row, column=1)  
+                # pause = input('Нажмите любую клавишу для продолжения работы: ')
+                if cur_cell.value is None:
+                    logger.info(f'Обнаружена пустая строка - {current_row}.')
+                    need_retry_check = False  # нужна ли повторная проверка
+                    for r in range(2, current_row):
+                        c = worksheet.cell(row=r, column=LIST_WITH_COLUMNS_COMBINED.index('Status_mailru')+1)
+                        # если значение статуса не содержится в словаре со статусами исключая no status
+                        if c.value not in LIST_WITH_STATUS_ACC[1: ]:
+                            need_retry_check = True
+                    if need_retry_check:
+                        current_row = 2
+                        logger.info(f'Начинаю повторную проверку со строки {current_row}.')
+                        cur_cell = worksheet.cell(row=current_row, column=1)
+                    else:
+                        print('Проверены все аккаунты из списка.')
+                        shutil.copyfile('combined_mailru.xlsx', f'backups/backup_combined_mailru.xlsx')
+                        logger.info(f'Создан backup файла combined_mailru.xlsx')
+                        break
             logger.info('Выход из цикла проверки')
-        except:
-            logger.critical(f'КРИТИЧЕСКАЯ ОШИБКА: при выполнении функции {inspect.currentframe().f_code.co_name}. Требуется перезапуск программы.')
+        except Exception as exc:
+            logger.critical(f'КРИТИЧЕСКАЯ ОШИБКА: при выполнении функции {inspect.currentframe().f_code.co_name}. {exc} Требуется перезапуск программы.')
 
 
 def start_change_password():
@@ -1416,8 +1495,8 @@ def start_change_password():
         try:
             logger.debug('Запускается инициализация драйвера')
             driver = init_driver()
-        except:
-            logger.error('Ошибка при инициализации экземпляра driver')
+        except Exception as exc:
+            logger.error(f'Ошибка при инициализации экземпляра driver - {exc}')
 
         get_web_page_in_browser(url='https://passport.yandex.ru/')
         sleep(randint(1, 3))
@@ -1445,9 +1524,9 @@ def start_change_password():
                 except Exception as exc:
                     logger.error(f'Не удалось загрузить куки: {cookie}')
                     print(exc)
-            sleep(1)
-            driver.refresh()
             sleep(3)
+            driver.refresh()
+            sleep(5)
             check_account_for_signin()
             sleep(5)
             # Проверяем результат авторизации
@@ -1464,7 +1543,7 @@ def start_change_password():
                     cur_avatar_obj = el_avatar2
                 elif el_avatar3:
                     cur_avatar_obj = el_avatar2
-                sleep(3)
+                sleep(5)
                 # Изменяем пароль
                 new_psw = navigate_menu_and_change_password(el_avatar=cur_avatar_obj, dict_with_data=dict_with_data)
                 if new_psw:
@@ -1674,7 +1753,7 @@ def start_set_password_app():
             logger.error('Ошибка при инициализации экземпляра driver')
 
         get_web_page_in_browser(url='https://passport.yandex.ru/')
-        sleep(2)
+        sleep(4)
         find_and_click_captcha_iam_not_robot()
         sleep(0.5)
         find_and_click_btn_close_window()
@@ -1701,9 +1780,9 @@ def start_set_password_app():
                     except Exception as exc:
                         logger.error(f'Не удалось загрузить куки: {cookie}')
                         print(exc)
-                sleep(1)
+                sleep(3)
                 driver.refresh()
-                sleep(1)
+                sleep(3)
                 check_account_for_signin()
                 # Проверяем результат авторизации
                 el_avatar = check_avatar1_mail_on_page_and_click()  # аватар 1 вида
@@ -1712,9 +1791,9 @@ def start_set_password_app():
                     logger.info(f'Вход выполнен успешно')
                     dict_with_data["Status_yandex"] = 'ok'
                     # get_web_page_in_browser(url='https://id.yandex.ru/security')  # безопасность
-                    # sleep(2)
+                    # sleep(4)
                     get_web_page_in_browser(url='https://id.yandex.ru/security/app-passwords')  # пароли приложений
-                    sleep(2)
+                    sleep(4)
                     try:
                         el_mail = driver.find_element(By.CSS_SELECTOR, '#__next > div > main > div > section:nth-child(2) > div > div.List_root__CuPfW > div:nth-child(1)')
                         el_mail.click()

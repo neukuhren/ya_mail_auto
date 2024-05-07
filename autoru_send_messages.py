@@ -7,12 +7,13 @@
 
 import json
 import logging # Импортируем библиотеку для безопасного хранения логов
-import datetime
+from datetime import datetime
 import inspect  # Для имени функции
 import pickle
 import shutil  # для загрузки куки - реализует  алгоритм сериализации и десериализации объектов Python
 # import re
 # from openpyxl import load_workbook
+
 
 from fake_useragent import UserAgent
 # import requests
@@ -20,12 +21,16 @@ from fake_useragent import UserAgent
 import random
 import sys
 
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+
+import requests
+
 # from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 # from selenium.webdriver.common.action_chains import ActionChains  # Цепочка событий
 from selenium.webdriver.common.keys import Keys
+
+
+
 
 # pip install selenium-stealth
 from selenium_stealth import stealth
@@ -43,17 +48,15 @@ from config import  USER_AGENT_MY_GOOGLE_CHROME, LIST_WITH_COLUMNS_LNK,\
 #     # HEADLESS, PARAMETER_CHANGE_PASSWORD,
 
 from utils import generate_random_password
-from captcha_utils import decrypt_captcha_deform_text
+from captcha_utils import decrypt_captcha_deform_text, hack_recaptcha_used_audio_file
 from excel_utils import  open_xlsx_file_and_return_active_sheet, \
     read_xslx_with_filter_col1_col2 # write_to_excel
 
 from txt_utils import write_in_end_row_file_txt, read_txt_file_and_lines_to_list, \
     read_txt_file_return_list_with_lines_text, read_parameters_from_txt_file_and_add_to_dict
 
-from browser import init_driver
+from browser import USE_PROXY, USE_ELITE_PRIVATE_PROXY, init_driver
 from work_sheet import next_available_row, write_cell
-
-
 
 # Установлены настройки логгера для текущего файла
 # В переменной __name__ хранится имя пакета;
@@ -110,6 +113,16 @@ def find_and_click_captcha_iam_not_robot() -> None:
                 logger.error('Ошибка при клике на каптчу')
     except:
         logger.debug(f'Каптчи 2 не было, либо она не была найдена.')
+    try:
+        el_captcha = driver.find_element(By.CLASS_NAME, "CheckboxCaptcha-Button")
+        if el_captcha:
+            logger.debug(f'На странице была найдена каптча. Кликаю')
+            try:
+                el_captcha.click()
+            except:
+                logger.error('Ошибка при клике на каптчу')
+    except:
+        logger.debug(f'Каптчи 3 не было, либо она не была найдена.')
         
 
 def find_and_click_btn_close_window() -> None:
@@ -178,28 +191,15 @@ def find_and_click_btn_write() -> None:
         el_btn_signin = driver.find_element(By.CLASS_NAME, 'OpenChatByOfferButton__caption')
         if el_btn_signin:
             logger.debug(f'На странице была найдена кнопка "написать". Кликаю')
-            try:
-                el_btn_signin.click()
-            except:
-                logger.error('Ошибка при клике на кнопку "написать"')
+            el_btn_signin.click()
     except:
-        logger.debug(f'Кнопка "написать" не найдена')
-
-
-def find_and_click_btn_write2() -> None:
-    """Проверяет есть ли кнопка и кликает на неё.
-    """
-    logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
-    try:
-        el_btn_signin = driver.find_element(By.CLASS_NAME, 'OpenChatByOfferButton__content')
-        if el_btn_signin:
-            logger.debug(f'На странице была найдена кнопка "написать". Кликаю')
-            try:
+        try:
+            el_btn_signin = driver.find_element(By.CLASS_NAME, 'OpenChatByOfferButton__content')
+            if el_btn_signin:
+                logger.debug(f'На странице была найдена кнопка "написать". Кликаю')
                 el_btn_signin.click()
-            except:
-                logger.error('Ошибка при клике на кнопку "написать"')
-    except:
-        logger.debug(f'Кнопка "написать" не найдена')
+        except:
+            pass
 
 
 def find_field_and_insert_text_msg(text_msg: str) -> bool:
@@ -225,7 +225,7 @@ def check_messsage_send_ok(text_msg='no text') -> bool:
     logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name}')
     try:
         el_chatmessage = driver.find_element(By.CLASS_NAME, "ChatMessage__text")
-        logger.info(f'el_chatmessage атрибут text имеет значение - {el_chatmessage.text}')
+        logger.debug(f'el_chatmessage атрибут text имеет значение - {el_chatmessage.text}')
         logger.info(f'el_chatmessage_text - {el_chatmessage}\n')
         if el_chatmessage:
             return True
@@ -291,21 +291,22 @@ def send_messages_main():
                             logger.debug('Запускается инициализация драйвера')
                             # pause = input('Нажмите клавишу Enter')
                             driver = init_driver()
-                        except:
-                            logger.error('Ошибка при инициализации экземпляра driver')                        
+                        except Exception as exc:
+                            logger.error(f'Ошибка при инициализации экземпляра driver - {exc}')                        
                         
                         # в цикле перебираем рандомные аккаунты 
                         try:
                             avatar_ = None
                             while avatar_ is None:  # цикл до успешной авторизации
                                 driver.delete_all_cookies() # удаляем cookies
-                                get_web_page_in_browser(url=URL_YANDEX_RU)                   
-                                sleep(randint(2, 4))
+                                # get_web_page_in_browser(url=URL_YANDEX_RU)
+                                get_web_page_in_browser(url='https://id.yandex.ru/')
+                                sleep(randint(5, 10))
                                 find_and_click_captcha_iam_not_robot()
-                                sleep(randint(1, 3))
+                                sleep(randint(1, 4))
                                 find_and_click_btn_close_window()
-                                find_add_favorite_and_click_btn_close_window()
-                                sleep(randint(1, 3))
+                                # find_add_favorite_and_click_btn_close_window()
+                                sleep(randint(1, 4))
 
                                 # загрузить в список файлы из папки cookies_yandex
                                 from os import listdir
@@ -330,31 +331,42 @@ def send_messages_main():
                                 # pause = input('Нажмите клавишу Enter')
 
                                 get_web_page_in_browser(url=dict_with_result_lnk['Lnk'])
-                                sleep(randint(3, 5))
+                                sleep(randint(4, 8))
                                 find_and_click_captcha_iam_not_robot()
-                                sleep(randint(1, 3))
-                                find_and_click_btn_close_window()
-                                find_add_favorite_and_click_btn_close_window()
-                                sleep(randint(1, 3))                                
+                                # hack_recaptcha_used_audio_file(driver=driver)
+                                sleep(randint(5, 10))
+
+                                # find_and_click_btn_close_window()
+                                # find_add_favorite_and_click_btn_close_window()
+                                # sleep(randint(1, 3))                                
                                 # pause = input('Нажмите клавишу Enter')
                                 # Проверяем успешность входа по аватарке HeaderUserMenu__userPic
                                 avatar2 = check_avatar2_on_page()
                                 if avatar2:
                                     get_web_page_in_browser(url=dict_with_result_lnk['Lnk'])
+                                    sleep(5)
+                                # Проверяем успешность входа по аватарке HeaderUserMenu__userPic
                                 avatar_ = check_avatar_on_page()
                                 if avatar_:  # Вход выполнен успешно
-                                    logger.info(f'Вход с аккаунта {random_file_cookies} выполнен успешно.')
+                                    logger.info(f'Вход с аккаунта {random_file_cookies[-4]} выполнен успешно.')
                                 else:
-                                    logger.info(f'Возможно вход с аккаунта {random_file_cookies} не был успешным. Начата попытка использовать другой аккаунт...')
+                                    logger.info(f'Возможно вход с аккаунта {random_file_cookies[: -4]} не был успешным. Начата попытка использовать другой аккаунт...')
+                                    driver.quit()
+                                    sleep(3)
+                                    driver = init_driver()
+
+                                    # Меняем прокси 
+                                    if USE_ELITE_PRIVATE_PROXY:
+                                        r = requests.get('http://176.9.113.111:20005/?command=switch&api_key=gNMLTBja2JNqnZWZPcvi&m_key=fG4MdgHCh5&port=21285')
+                                        sleep(5)
                             # pause = input('Нажмите клавишу Enter')
                             # Выполняем работу по отправке сообщения
-                            find_and_click_btn_write()  # Ищем кнопку написать и кликаем
-                            find_and_click_btn_write2()  # Ищем кнопку написать 2 типа и кликаем
+                            find_and_click_btn_write()  # Ищем кнопку написать 2 типов и кликаем
                             logger.debug('Получение рандомного текста')
                             frases_list = read_txt_file_return_list_with_lines_text(file_name='messages.txt')
-                            text_msg=random.choice(frases_list)
+                            dict_with_result_lnk["Message_text"]=random.choice(frases_list)
                             sleep(randint(3, 5))
-                            check_field_txt_msg_ = find_field_and_insert_text_msg(text_msg=text_msg)  # Ищем поле для сообщения и отправляем
+                            check_field_txt_msg_ = find_field_and_insert_text_msg(text_msg=dict_with_result_lnk["Message_text"])  # Ищем поле для сообщения и отправляем
                             # pause = input('Нажмите клавишу Enter')
                             if check_field_txt_msg_:
                                 pause_ = 10
@@ -381,10 +393,11 @@ def send_messages_main():
                             # Записать данные (новый статус, сообщение, дата, куки-автору)
                             # print(f'Получен словарь {dict_with_result_lnk}')
                             cur_cell = ws_lnk.cell(row=current_row, column=LIST_WITH_COLUMNS_LNK.index('Message_status')+1, value=dict_with_result_lnk['Message_status'])
-                            cur_cell = ws_lnk.cell(row=current_row, column=LIST_WITH_COLUMNS_LNK.index('Message_text')+1, value=text_msg)
+                            cur_cell = ws_lnk.cell(row=current_row, column=LIST_WITH_COLUMNS_LNK.index('Message_text')+1, value=dict_with_result_lnk["Message_text"])
                             # находим текущую дату и время
-                            dt_now = datetime.datetime.now()
-                            cur_cell = ws_lnk.cell(row=current_row, column=LIST_WITH_COLUMNS_LNK.index('Message_date')+1, value=dt_now)
+                            cur_dt = datetime.now().strftime('%x %X')
+                            dict_with_result_lnk["Message_date"] = cur_dt
+                            cur_cell = ws_lnk.cell(row=current_row, column=LIST_WITH_COLUMNS_LNK.index('Message_date')+1, value=dict_with_result_lnk["Message_date"])
 
                             # получаем куки
                             current_cookies = driver.get_cookies()
@@ -407,14 +420,16 @@ def send_messages_main():
                                 empty_row = next_available_row('lnk')
                                 write_cell('lnk',
                                         [[dict_with_result_lnk["Lnk"], 1],
-                                        [dict_with_result_lnk["Message_date"], 4],
-                                        [dict_with_result_lnk["Cookies"], 5],
+                                         [dict_with_result_lnk["Message_status"], 2],
+                                         [dict_with_result_lnk["Message_text"], 3],
+                                         [dict_with_result_lnk["Message_date"], 4],
+                                         [dict_with_result_lnk["Cookies"], 5],
                                         ],
                                         target_row=empty_row,
                                         )
-                            logger.debug(f'Попытка сохранить книгу')
+                            logger.info(f'Попытка сохранить книгу')
                             wb_lnk.save(filename='lnk.xlsx')  # сохранить xlsx файл
-                            logger.debug(f'файл xlsx сохранен')
+                            logger.info(f'Файл xlsx сохранен')
                             if current_row % 10 == 0:
                                 shutil.copyfile('lnk.xlsx', f'backups/backup_lnk.xlsx')
                                 logger.info(f'Создан backup файла combined.xlsx')
@@ -422,7 +437,7 @@ def send_messages_main():
                             driver.quit()  # Выход
                             # Если работа успешна и переходим к следующей ссылке
                             if dict_with_result_lnk["Message_status"] == 'send':
-                                break
+                                number_retry = 3  # чтобы не совершать новых попыток отправки по данной ссылке
                             elif dict_with_result_lnk["Message_status"] == 'retry':
                                 number_retry = 1  # Еще попытка отправки по данной ссылке
                             elif dict_with_result_lnk["Message_status"] == 'error':
@@ -430,26 +445,35 @@ def send_messages_main():
                 except:
                     logger.error('При работе со ссылкой произошла ошибка. Переход к следующей ссылке.')
                 finally:
-                    current_row += 1
-                    cur_cell = ws_lnk.cell(row=current_row, column=1)  # Переход на следующую строку
-                    # pause = input('Нажмите клавишу Enter для продолжения работы: ')
-                    if cur_cell.value is None:
-                        logger.info(f'Обнаружена пустая строка - {current_row}.')
-                        need_retry_check = False  # нужна ли повторная отправка сообщений
-                        for r in range(2, current_row):
-                            c = ws_lnk.cell(row=r, column=LIST_WITH_COLUMNS_LNK.index('Message_status')+1)
-                            # если значение статуса не содержится в словаре со статусами исключая no status
-                            if c.value not in LIST_WITH_STATUS_MSG[1: ]:
-                                need_retry_check = True
-                        if need_retry_check:
-                            current_row = 2
-                            logger.info(f'Начинаю повторную отправку со строки {current_row}.')
-                            cur_cell = ws_lnk.cell(row=current_row, column=1)
-                        else:
-                            print('Отправлены сообщения по всем ссылкам из списка.')
-                            shutil.copyfile('lnk.xlsx', f'backups/backup_lnk.xlsx')
-                            logger.info(f'Создан backup файла combined.xlsx')
-                            break
+                    if driver:
+                        # driver.close()  # Закрытие окна браузера
+                        driver.quit()  # Выход
+                    # Меняем прокси вручную
+                    if USE_ELITE_PRIVATE_PROXY:
+                        r = requests.get('http://176.9.113.111:20005/?command=switch&api_key=gNMLTBja2JNqnZWZPcvi&m_key=fG4MdgHCh5&port=21285')
+                        sleep(5)
+                    elif USE_PROXY:  # или ждем пару минут до смены
+                        sleep(random.randint(110, 130))
+            current_row += 1
+            cur_cell = ws_lnk.cell(row=current_row, column=1)  # Переход на следующую строку
+            # pause = input('Нажмите клавишу Enter для продолжения работы: ')
+            if cur_cell.value is None:
+                logger.info(f'Обнаружена пустая строка - {current_row}.')
+                need_retry_check = False  # нужна ли повторная отправка сообщений
+                for r in range(2, current_row):
+                    c = ws_lnk.cell(row=r, column=LIST_WITH_COLUMNS_LNK.index('Message_status')+1)
+                    # если значение статуса не содержится в словаре со статусами исключая no status
+                    if c.value not in LIST_WITH_STATUS_MSG[1: ] or c.value == 'retry':
+                        need_retry_check = True
+                if need_retry_check:
+                    current_row = 2
+                    logger.info(f'Начинаю повторную отправку со строки {current_row}.')
+                    cur_cell = ws_lnk.cell(row=current_row, column=1)
+                else:
+                    print('Отправлены сообщения по всем ссылкам из списка.')
+                    shutil.copyfile('lnk.xlsx', f'backups/backup_lnk.xlsx')
+                    logger.info(f'Создан backup файла combined.xlsx')
+                    break
 
         logger.info('Работа цикла отправки сообщений завершена.')
 
