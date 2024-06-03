@@ -176,6 +176,7 @@ lnk.txt
 lnk.xlsx
 
 config.txt
+system_files/ya-mail-auto.json
 
 # Не нужны для работы проекта
 for_test.py
