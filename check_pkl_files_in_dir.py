@@ -23,13 +23,20 @@ def convert_pkl_to_json_files_from_dir():
     output_directory = filedialog.askdirectory(title="Выберите папку для json файлов")
 
     input_directory, output_directory
+    all, good, bad = 0, 0, 0
     for filename in os.listdir(input_directory):
         if filename.endswith(".pkl"):
+            all += 1
             with open(os.path.join(input_directory, filename), 'rb') as file:
                 cookies_data = pickle.load(file)
-            with open(os.path.join(output_directory, filename.replace('.pkl', '.json')), 'w') as file:
-                json.dump({"cookies": cookies_data}, file)
+                if cookies_data:
+                    good +=1
+                    print(cookies_data)
+                else: bad += 1
+            # with open(os.path.join(output_directory, filename.replace('.pkl', '.json')), 'w') as file:
+            #     json.dump({"cookies": cookies_data}, file)
     logger.info(f'Работаем с файлами завершена')
+    print(f'Всего pkl файлов - {all}, прочитанных - {good}, битых - {bad}')
 
 
 if __name__ == '__main__':

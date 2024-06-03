@@ -164,6 +164,8 @@ backups/*
 system_files/cookies_autoru/*
 cookies_mailru/*
 cookies_yandex/*
+cookies_autoru/*
+old_cookies_autoru/*
 extensions/
 
 combined.txt
@@ -180,7 +182,7 @@ for_test.py
 old_archive.py
 stealth init driver.py
 test_output.txt
-test.py
+test*
 text.txt
 
 
@@ -191,3 +193,4 @@ vosk-model-small-en-us-0.15
 заметки.txt
 old_send_messages_copy.py
 work_google_sheets.py
+dolphin.xlsx

@@ -42,9 +42,9 @@ from random import randint
 
 # # - Подключение модулей -
 from config import  USER_AGENT_MY_GOOGLE_CHROME, LIST_WITH_COLUMNS_LNK,\
-    LIST_WITH_STATUS_MSG, LIST_WITH_COLUMNS_COMBINED
+    LIST_WITH_STATUS_MSG, POTOK, USED_COOKIES_FILES, SHEET_NAME
 #     PARAMETER_ANSWER_A_SECRET_QUESTION, PATH_TO_FILE_DRIVER_CHROME,\
-#     LIST_WITH_STATUS
+#     LIST_WITH_STATUS, LIST_WITH_COLUMNS_COMBINED,
 #     # HEADLESS, PARAMETER_CHANGE_PASSWORD,
 
 from utils import generate_random_password
@@ -64,7 +64,9 @@ from work_sheet import next_available_row, write_cell
 # Это имя будет передаваться в логи, в аргумент %(name)
 logger = logging.getLogger(__name__)
 
-dict_with_result_lnk = {} # словарь для хранения результатов работы со ссылкой
+dict_with_result_lnk_1 = {} # словарь для хранения результатов работы со ссылкой 1
+# dict_with_result_lnk_2 = {} # словарь для хранения результатов работы со ссылкой 2
+# dict_with_result_lnk_3 = {} # словарь для хранения результатов работы со ссылкой 3
 
 PARAM_DICT = read_parameters_from_txt_file_and_add_to_dict()
 """Словарь с параметрами из файла config.txt"""
@@ -255,118 +257,154 @@ def send_messages_main():
     # logger.info(f'Выбран режим {yandex_or_mail_accs} - {DICT_Y_OR_M_ACC[yandex_or_mail_accs]}')
     try:
         # Открываем xlsx книгу и активный лист
-        wb_lnk, ws_lnk = open_xlsx_file_and_return_active_sheet(file_name='lnk.xlsx')
+        wb_lnk, ws_lnk = open_xlsx_file_and_return_active_sheet(file_name=f'lnk{POTOK}.xlsx')
         if wb_lnk and ws_lnk:  # Если xlsx книга и активный лист получены
             current_row = 2  # С какой строки читать xlsx файл
-            logger.debug(f'Из книги lnk.xlsx получен активный лист {ws_lnk}')
+            logger.debug(f'Из книги lnk{POTOK}.xlsx получен активный лист {ws_lnk}')
 
         # Пройтись со второй строки 
-        cur_cell = ws_lnk.cell(row=current_row, column=1)  # столбец 1 - ссылка
-        while cur_cell.value is not None:  # до первой пустой
+        cur_cell_1 = ws_lnk.cell(row=current_row, column=1)  # столбец 1 - ссылка
+        # cur_cell_2 = ws_lnk.cell(row=current_row+1, column=1)  # столбец 2 - ссылка
+        # cur_cell_3 = ws_lnk.cell(row=current_row+2, column=1)  # столбец 2 - ссылка
+        while cur_cell_1.value is not None:  # до первой пустой
 
-            dict_with_result_lnk.clear()  # словарь для хранения данных о ссылке (строчке таблицы)
-            
+            dict_with_result_lnk_1.clear()  # словарь для хранения данных о ссылке (строчке таблицы)
+            # dict_with_result_lnk_2.clear()  # словарь для хранения данных о ссылке (строчке таблицы)
+            # dict_with_result_lnk_3.clear()  # словарь для хранения данных о ссылке (строчке таблицы)
+
             # Прочитаем второй столбец - Message_status
-            dict_with_result_lnk["Message_status"] = ws_lnk.cell(row=current_row, column=2).value
-            
+            dict_with_result_lnk_1["Message_status"] = ws_lnk.cell(row=current_row, column=2).value
+            # dict_with_result_lnk_2["Message_status"] = ws_lnk.cell(row=current_row+1, column=2).value
+            # dict_with_result_lnk_3["Message_status"] = ws_lnk.cell(row=current_row+2, column=2).value
             # Если статус ссылки пустой, неизвестный (нет в словаре) или retry (зациклить)
-            if (dict_with_result_lnk["Message_status"] is None or 
-                dict_with_result_lnk["Message_status"] not in LIST_WITH_STATUS_MSG or
-                dict_with_result_lnk["Message_status"] == 'retry' or
+            if (dict_with_result_lnk_1["Message_status"] is None or 
+                dict_with_result_lnk_1["Message_status"] not in LIST_WITH_STATUS_MSG or
+                dict_with_result_lnk_1["Message_status"] == 'retry' or
                 # Или статус сообщения соответствует проверяемому (из файла config.txt)
-                dict_with_result_lnk["Message_status"] == PARAM_DICT['CHECKED_LNK_MESSAGE_STATUS']):
+                dict_with_result_lnk_1["Message_status"] == PARAM_DICT['CHECKED_LNK_MESSAGE_STATUS']):
                 # то работаем со ссылкой (текущей строкой)
 
                 # Избавимся от приставки '\ufeff' при чтении ссылки из excel
-                dict_with_result_lnk["Lnk"] = cur_cell.value.replace('\ufeff', '')
-                logger.debug(f'Работа со ссылкой: {dict_with_result_lnk["Lnk"]}') 
+                dict_with_result_lnk_1["Lnk"] = cur_cell_1.value.replace('\ufeff', '')
+                # dict_with_result_lnk_2["Lnk"] = cur_cell_2.value.replace('\ufeff', '')
+                # dict_with_result_lnk_3["Lnk"] = cur_cell_3.value.replace('\ufeff', '')
+                logger.debug(f'Работа со ссылкой: {dict_with_result_lnk_1["Lnk"]}') 
                 
                 try:
-                    # по текущей ссылке будет выполнено 2 попытки отправки сообщения
-                    number_retry = 1
-                    while number_retry < 3:
-                        # Начинаем переход по ссылке
-                        global driver
+                    # Начинаем переход по ссылкам
+                    global driver
+                    try:
+                        logger.debug('Запускается инициализация драйвера')
+                        # pause = input('Нажмите клавишу Enter')
+                        driver = init_driver()
+                    except Exception as exc:
+                        logger.error(f'Ошибка при инициализации экземпляра driver - {exc}')
                         try:
-                            logger.debug('Запускается инициализация драйвера')
-                            # pause = input('Нажмите клавишу Enter')
-                            driver = init_driver()
-                        except Exception as exc:
-                            logger.error(f'Ошибка при инициализации экземпляра driver - {exc}')                        
-                        
-                        # в цикле перебираем рандомные аккаунты 
-                        try:
-                            avatar_ = None
-                            while avatar_ is None:  # цикл до успешной авторизации
-                                driver.delete_all_cookies() # удаляем cookies
-                                # get_web_page_in_browser(url=URL_YANDEX_RU)
+                            driver.close()
+                            sleep(3)
+                            driver.quit()
+                        except: pass                   
+                    
+                    # в цикле перебираем рандомные аккаунты 
+                    try:
+                        avatar_ = None
+                        while avatar_ is None:  # цикл до успешной авторизации
+                            driver.delete_all_cookies() # удаляем cookies
+                            if USED_COOKIES_FILES == 'yandex':
                                 get_web_page_in_browser(url='https://id.yandex.ru/')
-                                sleep(randint(5, 10))
-                                find_and_click_captcha_iam_not_robot()
-                                sleep(randint(1, 4))
-                                find_and_click_btn_close_window()
-                                # find_add_favorite_and_click_btn_close_window()
-                                sleep(randint(1, 4))
+                            elif USED_COOKIES_FILES == 'autoru':
+                                get_web_page_in_browser(url=dict_with_result_lnk_1["Lnk"])
+                            sleep(randint(5, 10))
+                            find_and_click_captcha_iam_not_robot()
+                            sleep(randint(1, 4))
+                            find_and_click_btn_close_window()
+                            # find_add_favorite_and_click_btn_close_window()
+                            sleep(randint(1, 4))
 
-                                # загрузить в список файлы из папки cookies_yandex
-                                from os import listdir
-                                from os.path import isfile, join
-                                files_from_dir_cookies = [f for f in listdir('./cookies_yandex/') if isfile(join('./cookies_yandex/', f))]
-                                # Выбираем файл pkl
+                            # загрузить в список файлы из папки cookies_yandex
+                            from os import listdir
+                            from os.path import isfile, join
+                            if USED_COOKIES_FILES == 'yandex':
+                                dir_with_cookies_files = 'cookies_yandex'
+                            elif USED_COOKIES_FILES == 'autoru':
+                                dir_with_cookies_files = 'cookies_autoru'
+
+                            files_from_dir_cookies = [f for f in listdir(f'./{dir_with_cookies_files}/') if isfile(join(f'./{dir_with_cookies_files}/', f))]
+                            # Выбираем файл pkl
+                            random_file_cookies = random.choice(files_from_dir_cookies)
+                            while random_file_cookies[-4: ] != '.pkl':
                                 random_file_cookies = random.choice(files_from_dir_cookies)
-                                while random_file_cookies[-4: ] != '.pkl':
-                                    random_file_cookies = random.choice(files_from_dir_cookies)
+                            # читаем содержимое файла
+                            try:
                                 logger.info(f'Работаем с аккаунтом {random_file_cookies[: -4]}')
-                                cookies = pickle.load(open(f"cookies_yandex/{random_file_cookies}", "rb"))
-                                logger.debug(f'{cookies}')
+                                cookies = pickle.load(open(f"{dir_with_cookies_files}/{random_file_cookies}", "rb"))
                                 if cookies is None:
-                                    logger.error('Не удалось загрузить файл с куками')
-                                for cookie in cookies[: -2]:
-                                    try:
+                                    logger.critical('Не удалось прочитать файл с куками')
+                                elif cookies:
+                                    # подгружаем cookies в браузер
+                                    for cookie in cookies[: -2]:
                                         driver.add_cookie(cookie)
-                                    except Exception as exc:
-                                        logger.error(f'Не удалось загрузить куки: {cookie}')
-                                        print(exc)
-                                sleep(randint(3, 5))              
-                                # pause = input('Нажмите клавишу Enter')
+                                    logger.info('cookies подгружены')
+                            except Exception as exc:
+                                logger.critical(f'Не удалось загрузить куки: {cookie}', exc)
 
-                                get_web_page_in_browser(url=dict_with_result_lnk['Lnk'])
-                                sleep(randint(4, 8))
-                                find_and_click_captcha_iam_not_robot()
-                                # hack_recaptcha_used_audio_file(driver=driver)
-                                sleep(randint(5, 10))
 
-                                # find_and_click_btn_close_window()
-                                # find_add_favorite_and_click_btn_close_window()
-                                # sleep(randint(1, 3))                                
-                                # pause = input('Нажмите клавишу Enter')
-                                # Проверяем успешность входа по аватарке HeaderUserMenu__userPic
-                                avatar2 = check_avatar2_on_page()
-                                if avatar2:
-                                    get_web_page_in_browser(url=dict_with_result_lnk['Lnk'])
-                                    sleep(5)
-                                # Проверяем успешность входа по аватарке HeaderUserMenu__userPic
-                                avatar_ = check_avatar_on_page()
-                                if avatar_:  # Вход выполнен успешно
-                                    logger.info(f'Вход с аккаунта {random_file_cookies[-4]} выполнен успешно.')
-                                else:
-                                    logger.info(f'Возможно вход с аккаунта {random_file_cookies[: -4]} не был успешным. Начата попытка использовать другой аккаунт...')
-                                    driver.quit()
-                                    sleep(3)
-                                    driver = init_driver()
-
-                                    # Меняем прокси 
-                                    if USE_ELITE_PRIVATE_PROXY:
-                                        r = requests.get('http://176.9.113.111:20005/?command=switch&api_key=gNMLTBja2JNqnZWZPcvi&m_key=fG4MdgHCh5&port=21285')
-                                        sleep(5)
+                            sleep(randint(3, 5))              
                             # pause = input('Нажмите клавишу Enter')
-                            # Выполняем работу по отправке сообщения
+                            get_web_page_in_browser(url=dict_with_result_lnk_1['Lnk'])
+                            sleep(randint(4, 8))
+                            find_and_click_captcha_iam_not_robot()
+                            # hack_recaptcha_used_audio_file(driver=driver)
+                            sleep(randint(5, 10))
+
+                            # find_and_click_btn_close_window()
+                            # find_add_favorite_and_click_btn_close_window()
+                            # sleep(randint(1, 3))                                
+                            # pause = input('Нажмите клавишу Enter')
+
+                            # Проверяем успешность входа на по аватарке HeaderUserMenu__userPic
+                            # avatar2 = check_avatar2_on_page()
+                            # if avatar2:
+                            #     get_web_page_in_browser(url=dict_with_result_lnk['Lnk'])
+                            #     sleep(5)
+                            # Проверяем успешность входа на auto.ru по аватарке HeaderUserMenu__userPic
+                            avatar_ = check_avatar_on_page()
+                            if avatar_:  # Вход выполнен успешно
+                                logger.info(f'Вход с аккаунта {random_file_cookies[: -4]} выполнен успешно.')
+                            else:
+                                logger.info(f'Возможно вход с аккаунта {random_file_cookies[: -4]} не был успешным. Начата попытка использовать другой аккаунт...')
+                                try:
+                                    driver.close()
+                                    sleep(3)
+                                    driver.quit()
+                                except: pass
+                                sleep(3)
+                                driver = init_driver()
+
+                                # Меняем прокси 
+                                if USE_ELITE_PRIVATE_PROXY:
+                                    r = requests.get('http://176.9.113.111:20005/?command=switch&api_key=gNMLTBja2JNqnZWZPcvi&m_key=fG4MdgHCh5&port=21285')
+                                    sleep(5)
+
+                        # Выполняем работу по отправке сообщений
+                        list_with_urls_dicts = []
+                        list_with_urls_dicts.append(dict_with_result_lnk_1)
+                        # list_with_urls_dicts.append(dict_with_result_lnk_2)
+                        # list_with_urls_dicts.append(dict_with_result_lnk_3)
+                        for d in list_with_urls_dicts:
+                            get_web_page_in_browser(url=d['Lnk'])
+                            sleep(randint(2, 5))
+                            find_and_click_captcha_iam_not_robot()
+                            # hack_recaptcha_used_audio_file(driver=driver)
+                            sleep(randint(2, 5))
                             find_and_click_btn_write()  # Ищем кнопку написать 2 типов и кликаем
                             logger.debug('Получение рандомного текста')
                             frases_list = read_txt_file_return_list_with_lines_text(file_name='messages.txt')
-                            dict_with_result_lnk["Message_text"]=random.choice(frases_list)
+                            dict_with_result_lnk_1["Message_text"]=random.choice(frases_list)
+                            # dict_with_result_lnk_2["Message_text"]=random.choice(frases_list)
+                            # dict_with_result_lnk_3["Message_text"]=random.choice(frases_list)
                             sleep(randint(3, 5))
-                            check_field_txt_msg_ = find_field_and_insert_text_msg(text_msg=dict_with_result_lnk["Message_text"])  # Ищем поле для сообщения и отправляем
+                            check_field_txt_msg_ = find_field_and_insert_text_msg(text_msg=dict_with_result_lnk_1["Message_text"])  # Ищем поле для сообщения и отправляем
                             # pause = input('Нажмите клавишу Enter')
                             if check_field_txt_msg_:
                                 pause_ = 10
@@ -377,27 +415,27 @@ def send_messages_main():
                                 if send_msg == True:
                                     logger.info('Сообщение было успешно отправлено.')
                                     # Если статус был 'retry' (на повторе), то статус не меняем
-                                    if dict_with_result_lnk["Message_status"] != 'retry':
-                                        dict_with_result_lnk["Message_status"] = 'send'
-                                else:  # после неудачной отправки сообщения меняем пользователя
-                                    dict_with_result_lnk['Message_status'] = 'no status'
+                                    if d["Message_status"] != 'retry':
+                                        d["Message_status"] = 'send'
+                                else:  # после неудачной отправки сообщения пробуем по следующей ссылке
+                                    d["Message_status"] = 'no status'
                                     logger.info('Сообщение не отправлено.')
                             else:  # если не нашлось поля текст сообщения
-                                dict_with_result_lnk["Message_status"] = 'skip'
-                                number_retry = 3  # чтобы не совершать новых попыток отправки по данной ссылке
+                                d["Message_status"] = 'skip'
                                 logger.info('Нет возможности отправки сообщения по данной ссылке (skip)')
-                        except Exception as exc:
-                            logger.error(f'Ошибка {exc} при авторизации или отправке сообщения. Повторнная попытка...')
-                            dict_with_result_lnk["Message_status"] = 'error'
-                        finally:
-                            # Записать данные (новый статус, сообщение, дата, куки-автору)
-                            # print(f'Получен словарь {dict_with_result_lnk}')
-                            cur_cell = ws_lnk.cell(row=current_row, column=LIST_WITH_COLUMNS_LNK.index('Message_status')+1, value=dict_with_result_lnk['Message_status'])
-                            cur_cell = ws_lnk.cell(row=current_row, column=LIST_WITH_COLUMNS_LNK.index('Message_text')+1, value=dict_with_result_lnk["Message_text"])
+                            sleep(3)
+                    except Exception as exc:
+                        logger.error(f'Ошибка {exc} при авторизации или отправке сообщения. Повторнная попытка...')
+                        dict_with_result_lnk_1["Message_status"] = 'error'
+                    finally:
+                        # Записать данные (новый статус, сообщение, дата, куки-автору)
+                        for idx, d in enumerate(list_with_urls_dicts):
+                            ws_lnk.cell(row=current_row+idx, column=LIST_WITH_COLUMNS_LNK.index('Message_status')+1, value=d["Message_status"])
+                            if "Message_text" in d: ws_lnk.cell(row=current_row+idx, column=LIST_WITH_COLUMNS_LNK.index('Message_text')+1, value=d["Message_text"])
                             # находим текущую дату и время
                             cur_dt = datetime.now().strftime('%x %X')
-                            dict_with_result_lnk["Message_date"] = cur_dt
-                            cur_cell = ws_lnk.cell(row=current_row, column=LIST_WITH_COLUMNS_LNK.index('Message_date')+1, value=dict_with_result_lnk["Message_date"])
+                            d["Message_date"] = cur_dt
+                            ws_lnk.cell(row=current_row+idx, column=LIST_WITH_COLUMNS_LNK.index('Message_date')+1, value=d["Message_date"])
 
                             # получаем куки
                             current_cookies = driver.get_cookies()
@@ -405,59 +443,58 @@ def send_messages_main():
                             # pause = input('Нажмите клавишу Enter')
 
                             # сохраняем куки с помощью pickle
-                            pickle.dump(driver.get_cookies(), open(f"system_files/cookies_autoru/{random_file_cookies}", "wb"))
-                            logger.debug(f'Создан файл system_files/cookies_autoru/{random_file_cookies}')  
+                            pickle.dump(driver.get_cookies(), open(f"cookies_autoru/{random_file_cookies}", "wb"))
+                            logger.debug(f'Создан файл cookies_autoru/{random_file_cookies}')  
 
                             # сохраняем куки в json
-                            with open(f'system_files/cookies_autoru/{random_file_cookies[: -4]}.json', 'w') as file:
+                            with open(f'cookies_autoru/{random_file_cookies[: -4]}.json', 'w') as file:
                                 json.dump(current_cookies, file)
                                 logger.debug(f'Cookies аккаунта {random_file_cookies[: -4]} успешно сохранены в cookies_autoru')
 
-                            dict_with_result_lnk['Cookies'] = current_cookies
-                            if dict_with_result_lnk['Cookies']:
+                            d["Cookies"] = current_cookies
+                            if d['Cookies']:
                                 # print(dict_with_result_lnk['Cookies'])
-                                cur_cell = ws_lnk.cell(row=current_row, column=LIST_WITH_COLUMNS_LNK.index('Cookies')+1, value=str(dict_with_result_lnk['Cookies']))
-                                empty_row = next_available_row('lnk')
-                                write_cell('lnk',
-                                        [[dict_with_result_lnk["Lnk"], 1],
-                                         [dict_with_result_lnk["Message_status"], 2],
-                                         [dict_with_result_lnk["Message_text"], 3],
-                                         [dict_with_result_lnk["Message_date"], 4],
-                                         [dict_with_result_lnk["Cookies"], 5],
+                                cur_cell = ws_lnk.cell(row=current_row+idx, column=LIST_WITH_COLUMNS_LNK.index('Cookies')+1, value=str(d['Cookies']))
+                                empty_row = next_available_row(SHEET_NAME)
+                                write_cell(SHEET_NAME,
+                                        [[d["Lnk"], 1],
+                                         [d["Message_status"], 2],
+                                         [d["Message_date"], 4],
+                                         [d["Cookies"], 5],
+                                         [random_file_cookies[: -4], 6]
                                         ],
                                         target_row=empty_row,
                                         )
+                                if "Message_text" in d: write_cell(SHEET_NAME, [[d["Message_text"], 3],], target_row=empty_row)
                             logger.info(f'Попытка сохранить книгу')
-                            wb_lnk.save(filename='lnk.xlsx')  # сохранить xlsx файл
+                            wb_lnk.save(filename=f'lnk{POTOK}.xlsx')  # сохранить xlsx файл
                             logger.info(f'Файл xlsx сохранен')
                             if current_row % 10 == 0:
-                                shutil.copyfile('lnk.xlsx', f'backups/backup_lnk.xlsx')
+                                shutil.copyfile(f'lnk{POTOK}.xlsx', f'backups/backup_lnk{POTOK}.xlsx')
                                 logger.info(f'Создан backup файла combined.xlsx')
-                            driver.close()  # Закрытие окна браузера
-                            driver.quit()  # Выход
-                            # Если работа успешна и переходим к следующей ссылке
-                            if dict_with_result_lnk["Message_status"] == 'send':
-                                number_retry = 3  # чтобы не совершать новых попыток отправки по данной ссылке
-                            elif dict_with_result_lnk["Message_status"] == 'retry':
-                                number_retry = 1  # Еще попытка отправки по данной ссылке
-                            elif dict_with_result_lnk["Message_status"] == 'error':
-                                number_retry += 1  
-                except:
-                    logger.error('При работе со ссылкой произошла ошибка. Переход к следующей ссылке.')
+                        try:
+                            driver.close()
+                            sleep(3)
+                            driver.quit()
+                        except: pass
+                except Exception as exc:
+                    logger.error(f'При работе со ссылкой произошла ошибка - {exc}. Переход к следующей ссылке.')
                 finally:
-                    if driver:
-                        # driver.close()  # Закрытие окна браузера
-                        driver.quit()  # Выход
+                    try:
+                        driver.close()
+                        sleep(3)
+                        driver.quit()
+                    except: pass
                     # Меняем прокси вручную
                     if USE_ELITE_PRIVATE_PROXY:
                         r = requests.get('http://176.9.113.111:20005/?command=switch&api_key=gNMLTBja2JNqnZWZPcvi&m_key=fG4MdgHCh5&port=21285')
                         sleep(5)
                     elif USE_PROXY:  # или ждем пару минут до смены
-                        sleep(random.randint(110, 130))
+                        sleep(random.randint(110, 130)/10)
             current_row += 1
-            cur_cell = ws_lnk.cell(row=current_row, column=1)  # Переход на следующую строку
+            cur_cell_1 = ws_lnk.cell(row=current_row, column=1)  # Переход на следующую строку
             # pause = input('Нажмите клавишу Enter для продолжения работы: ')
-            if cur_cell.value is None:
+            if cur_cell_1.value is None:
                 logger.info(f'Обнаружена пустая строка - {current_row}.')
                 need_retry_check = False  # нужна ли повторная отправка сообщений
                 for r in range(2, current_row):
@@ -468,17 +505,26 @@ def send_messages_main():
                 if need_retry_check:
                     current_row = 2
                     logger.info(f'Начинаю повторную отправку со строки {current_row}.')
-                    cur_cell = ws_lnk.cell(row=current_row, column=1)
+                    cur_cell_1 = ws_lnk.cell(row=current_row, column=1)
                 else:
                     print('Отправлены сообщения по всем ссылкам из списка.')
-                    shutil.copyfile('lnk.xlsx', f'backups/backup_lnk.xlsx')
+                    shutil.copyfile(f'lnk{POTOK}.xlsx', f'backups/backup_lnk{POTOK}.xlsx')
                     logger.info(f'Создан backup файла combined.xlsx')
                     break
 
         logger.info('Работа цикла отправки сообщений завершена.')
-
+        try:
+            driver.close()
+            sleep(3)
+            driver.quit()
+        except: pass
     except:
         logger.critical('КРИТИЧЕСКАЯ ОШИБКА: при выполнении главной функции. Требуется перезапуск программы.')
+        try:
+            driver.close()
+            sleep(3)
+            driver.quit()
+        except: pass
 
 
 

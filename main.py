@@ -7,9 +7,10 @@ import logging # Импортируем библиотеку для безопа
 import inspect  # Для имени функции
 
 from time import time
+import sys
 
 # # - Подключение модулей -
-from config import DICT_WORK_MODES
+from config import DICT_WORK_MODES, set_value_POTOK
 
 from read_combined import read_combined_main
 from check_yandex_accounts import check_yandex_accounts_main, change_password_for_ok_accs_main,\
@@ -18,6 +19,7 @@ from read_links import read_links_main
 from autoru_send_messages import send_messages_main
 from check_mailru_accounts import check_mailru_accounts_main
 from converter_pkl_to_json import convert_pkl_to_json_files_from_dir
+
 
 
 logger = logging.getLogger(__name__)
@@ -79,7 +81,10 @@ if __name__ == '__main__':
         # x — создать файл и записывать логи в него; если файл с таким именем уже существует — возникнет ошибка;
         # a — дописывать новые логи в конец указанного файла.
     )
-    
+    try:
+        set_value_POTOK(int(sys.argv[1]))
+    except:
+        pass
     main()
 
     print('\n\n')

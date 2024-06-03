@@ -296,12 +296,12 @@ user_agent_google_chrome_list = [
 PATH_VOSK_MODEL = 'vosk-model-en-us-0.22-lgraph'
 """Имя папки, в которой находится модель Vosk"""
 
-USE_RANDOM_FAKE_USER_AGENT = True
-"""Использовать ли рандомный фейковый юзер агент"""
-USE_UNDETECTED_CHROMEDRIVER = True
-"""Использовать браузер под управлением библиотеки undetected-chromedriver"""
-USE_SELENIUM_STEALTH = True
-"""Использовать браузер под управлением библиотеки selenium-stealth"""
-DISABLE_AUTO_OPTIONS_SELENIUM = False
-"""Для обхода проверки браузера на использование автоматизированного ПО
-    возможно отключение некоторых опций, браузера под управлением Selenium."""
+USED_COOKIES_FILES = 'autoru'
+"""Директория с куки-файлами, которые будут использоваться для рассылки сообщений на auto.ru"""
+
+global POTOK
+POTOK = 1
+def set_value_POTOK(n):
+    global POTOK
+    POTOK = n
+SHEET_NAME = '9283218326'

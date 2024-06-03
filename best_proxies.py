@@ -17,7 +17,8 @@ from dotenv import load_dotenv # pip install python-dotenv
 load_dotenv()
 # Теперь переменные (TOKEN и др.), описанные в файле .env,
 # доступны в пространстве переменных окружения
-API_KEY_BEST_PROXY = os.getenv('API_KEY_BEST_PROXY')
+# API_KEY_BEST_PROXY = os.getenv('API_KEY_BEST_PROXY')
+API_KEY_BEST_PROXY = ''
 
 # from utils import timer_in_consol
 

@@ -3,6 +3,8 @@ import gspread
 import logging
 import inspect
 
+from config import SHEET_NAME
+
 logger = logging.getLogger(__name__)
 
 sa = gspread.service_account(filename='./system_files/ya-mail-auto.json')
@@ -15,7 +17,7 @@ def read_sheet(ws_name : str, file_name = 'ya_mail_auto') -> list:
     return sh.sheet1.get_all_values()
 
 
-def next_available_row(ws_name = 'lnk', file_name = "ya_mail_auto"):
+def next_available_row(ws_name :str, file_name = "ya_mail_auto"):
     sh = sa.open(file_name)
     ws = sh.worksheet(ws_name)
     str_list = list(filter(None, ws.col_values(1)))

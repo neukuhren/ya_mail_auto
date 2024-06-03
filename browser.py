@@ -1,5 +1,9 @@
 """Модуль для cозданиz экземпляра веб драйвера.
 """
+import inspect  # Для имени функции
+import random
+import requests
+
 # pip install selenium-stealth
 from selenium_stealth import stealth
 
@@ -21,39 +25,40 @@ import undetected_chromedriver as uc
 # pip install fake-useragent
 from fake_useragent import UserAgent
 
-import logging # Импортируем библиотеку для безопасного хранения логов
+import logging
 # Установлены настройки логгера для текущего файла
 # В переменной __name__ хранится имя пакета;
 # Это же имя будет присвоено логгеру.
 # Это имя будет передаваться в логи, в аргумент %(name)
 logger = logging.getLogger(__name__)
 
-import inspect  # Для имени функции
-import random
 # from best_proxies import rotate_proxy
-
+from config import POTOK 
+from config_dolphin import IDS_PROFILE_DOLPHY
 
 # --------------------- Конфигурация браузера-------------------------
 USE_RANDOM_FAKE_USER_AGENT = True
-"""Использовать случайный UserAgent из библиотеки fake-useragent"""
+# """Использовать случайный UserAgent из библиотеки fake-useragent"""
 USER_AGENT_MY_GOOGLE_CHROME = "Mozilla/5.0 (Macintosh; \
     Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, \
     like Gecko) Chrome/114.0.0.0 Safari/537.36"
-HEADLESS = True
+HEADLESS = False
 """Использование браузера в скрытом (свернутом) режиме."""
-USE_UNDETECTED_CHROMEDRIVER = True
-"""Использовать браузер под управлением библиотеки undetected-chromedriver"""
 USE_SELENIUM_STEALTH = True
 """Использовать браузер под управлением библиотеки selenium-stealth"""
 DISABLE_AUTO_OPTIONS_SELENIUM = True
 """Для обхода проверки браузера на использование автоматизированного ПО
     возможно отключение некоторых опций, браузера под управлением Selenium."""
-USE_PROXY = True
+USE_MY_HEADERS = False
+"""Передавать ли мои заголовки в браузере"""
+USE_PROXY = False
 """Использовать ли прокси-сервер"""
 USE_ELITE_PRIVATE_PROXY = False
 """Использовать ли элитные прокси с ручной ротацией"""
-USE_MY_HEADERS = False
-"""Передавать ли мои заголовки в браузере"""
+USE_UNDETECTED_CHROMEDRIVER = False
+"""Использовать браузер под управлением библиотеки undetected-chromedriver"""
+USE_DOLPHIN_ANTY = False
+"""Использовать ли антидетекст браузер dolphin anty"""
 # ---------------------------------------------------------------------
 
 
@@ -66,6 +71,12 @@ def init_driver() -> webdriver:
     """
     logger.debug(f'Запуск функции {inspect.currentframe().f_code.co_name} - инициализация браузера.')
     try:
+        # -------------------- Опции для браузера (драйвера) --------------------
+        if USE_UNDETECTED_CHROMEDRIVER:
+            options = uc.ChromeOptions()
+        else:
+            options = webdriver.ChromeOptions()
+        
         # Создание экземпляра UserAgent
         ua = UserAgent()  # (browsers=['chrome',])
         if USE_RANDOM_FAKE_USER_AGENT:
@@ -74,39 +85,15 @@ def init_driver() -> webdriver:
             # Изменение случайного юзер агента на свой chrome mac os (для теста)
             fake_user_agent = USER_AGENT_MY_GOOGLE_CHROME
         logger.debug(f'Создан user agent: {fake_user_agent}')
-
-        # Опции для браузера (драйвера)
-        # options = webdriver.ChromeOptions()
-        options = uc.ChromeOptions() 
-
         options.add_argument(f'--user-agent={fake_user_agent}')
         logger.debug('в options добавлен fake_user_agent')
 
         # Включение режима инкогнито (для chrome)
         # options.add_argument("--incognito")
-
-        if HEADLESS:
-            options.headless = True
-            # options.add_argument("--headless")
-            logger.debug('в options включен скрытый режим браузера')
-        else: 
-            options.headless = False
-
-        # путь к chromedriver.exe (можно задать через service)
-        # s = Service('chromedriver/')
-
-        # ------ Отключение автоматизированного ПО -------
-        options.add_argument("--disable-blink-features=AutomationControlled")
-
-        # ------ Отключение надписи автоматизированного ПО сверху ------
-        if not USE_UNDETECTED_CHROMEDRIVER:
-            options.add_experimental_option("excludeSwitches", ["enable-automation"])
-            options.add_experimental_option('useAutomationExtension', False)
-
         # Отключение всплывающих окон chrome
         options.add_argument("--disable-infobars")
         options.add_argument("--disable-notifications")
-        options.add_argument("--disable-extensions")
+        # options.add_argument("--disable-extensions")
         options.add_argument('--ignore-certificate-errors')
         
         # WebDriver ожидает, пока не будет возвращен запуск события DOMContentLoaded.
@@ -116,19 +103,10 @@ def init_driver() -> webdriver:
         options.add_experimental_option(
             "prefs", {"profile.default_content_setting_values.notifications": 1}
             )
+        
+        # ------ Отключение автоматизированного ПО -------
+        options.add_argument("--disable-blink-features=AutomationControlled")
 
-        if USE_PROXY:
-            # Selenium configuration to use a proxy
-            # 195.201.106.30:11321:R9DShEZhZM:ZzV5QifvGj
-            options.add_argument('--proxy=195.201.106.30:11321')
-            options.add_argument('--proxy-auth=R9DShEZhZM:ZzV5QifvGj')
-
-        if USE_ELITE_PRIVATE_PROXY:
-            # Selenium configuration to use a proxy
-            # 65.109.79.176:30035:KlY7AUbMk77g:TSaV9gpByq
-            options.add_argument('--proxy=65.109.79.176:30035')
-            options.add_argument('--proxy-auth=KlY7AUbMk77g:TSaV9gpByq') 
-                  
         # Список распространённых разрешений экрана
         screen_res = [(1366, 768), (1920, 1080), (1024, 768)]
         # Список распространённых семейств шрифтов
@@ -137,26 +115,100 @@ def init_driver() -> webdriver:
         width, height = random.choice(screen_res)
 
         #Создание опций chrome
-        opts = webdriver.ChromeOptions()
+        # opts = webdriver.ChromeOptions()
         # Установка случайного разрешения экрана
-        opts.add_argument(f"--window-size={width},{height}")
-        # Установка случайного user agent
-        opts.add_argument("--user-agent=Mozilla/5.0...")
+        options.add_argument(f"--window-size={width},{height}")
         # Установка случайного списка шрифтов
         random_fonts = random.choices(font_families, k=2)
-        opts.add_argument(f'--font-list="{random_fonts[0]};{random_fonts[1]}"')
+        options.add_argument(f'--font-list="{random_fonts[0]};{random_fonts[1]}"')
 
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-renderer-backgrounding")
+        options.add_argument("--disable-background-timer-throttling")
+        options.add_argument("--disable-backgrounding-occluded-windows")
+        options.add_argument("--disable-client-side-phishing-detection")
+        options.add_argument("--disable-crash-reporter")
+        options.add_argument("--disable-oopr-debug-crash-dump")
+        options.add_argument("--no-crash-upload")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--disable-extensions")
+        options.add_argument("--disable-low-res-tiling")
+        options.add_argument("--log-level=3")
+        options.add_argument("--silent")
+
+        options.add_argument('--disable-popup-blocking')
+        
+        # путь к chromedriver.exe (можно задать через service)
+        # s = Service('chromedriver/')
+
+        if HEADLESS:
+            options.headless = True
+            # options.add_argument("--headless")
+            logger.debug('в options включен скрытый режим браузера')
+        else: 
+            options.headless = False
+
+        # ------ Отключение надписи автоматизированного ПО сверху ------
+        if not USE_UNDETECTED_CHROMEDRIVER and not USE_DOLPHIN_ANTY:
+            options.add_experimental_option("excludeSwitches", ["enable-automation"])
+            options.add_experimental_option('useAutomationExtension', False)
+
+        list_proxy_port_user_psw = [
+            [],
+            ['65.109.79.176:30035', 'R9DShEZhZM:ZzV5QifvGj'],  # мой lteboost
+        ]
+        """Список прокси, портов логинов и паролей"""
+        
+        if USE_PROXY:
+            # Selenium configuration to use a proxy
+            options.add_argument(f'--proxy={list_proxy_port_user_psw[POTOK][0]}')
+            options.add_argument(f'--proxy-auth={list_proxy_port_user_psw[POTOK][1]}')
+
+        if USE_ELITE_PRIVATE_PROXY:
+            # Selenium configuration to use a proxy
+            options.add_argument(f'--proxy=65.109.79.176:30035')
+            options.add_argument(f'--proxy-auth=KlY7AUbMk77g:TSaV9gpByq') 
+        
         if USE_UNDETECTED_CHROMEDRIVER:
             driver = uc.Chrome(headless=HEADLESS, use_subprocess=False, options=options)
-        else:
-            # инициализируем драйвер с нужными опциями
-            driver = webdriver.Chrome(
-                options=options,
+
+        elif USE_DOLPHIN_ANTY:
+            # Делаем запрос к антику и получаем его параметры нужного профиля
+            url_dolphin_profiles = 'http://localhost:3001/v1.0/browser_profiles/'+ IDS_PROFILE_DOLPHY[POTOK] + '/start?automation=1'
+            r = requests.get(url_dolphin_profiles)
+
+            # Получаем ответ после запуска профиля
+            json = r.json()
+            logger.info(r.text)
+            # Парсим значение открытого порта профиля антика
+            port = str(json['automation']['port'])
+            logger.debug(port)
+
+            # Инициализируем путь к веб драйверу Dolphin Anti
+            # chrome_dolphin_driver_path = Service("C:/Users/duglas/Desktop/SELENIUM/chromedriver-windows-x64-dolphin.exe")
+
+            # Загружаем предварительные настройки в Selenium драйвер и подключаемся к порту запущенного профиля
+            options = webdriver.ChromeOptions()
+            options.debugger_address = "127.0.0.1:" + port
+            driver = webdriver.Chrome(options=options) # service=chrome_dolphin_driver_path,
+        
+        else:  # Обычный хром драйвер
+            driver = webdriver.Chrome(options=options) 
+
+        if USE_SELENIUM_STEALTH:
+            # надстройка selenium-stealth, предназначенная для скрытия следов автоматизации
+            stealth(driver=driver,
+                user_agent=fake_user_agent,
+                languages=["ru-RU", "ru"],
+                vendor="Google Inc.",
+                platform="Win32",
+                webgl_vendor="Intel Inc.",
+                renderer="Intel Iris OpenGL Engine",
+                fix_hairline=True,
+                run_on_insecure_origins=True,
                 )
-        driver.set_page_load_timeout(30)
-        # driver.maximize_window()
-
-
+        
         if USE_MY_HEADERS:
             my_headers = {
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
@@ -190,7 +242,7 @@ def init_driver() -> webdriver:
 
             # Set the interceptor on the driver
             driver.request_interceptor = interceptor
-
+        
         # Для того, чтобы обойти защиту проверки браузера на использование автоматизированного ПО,
         # Отключение некоторых опций, которые присутствуют в браузере под управлением Selenium
         if DISABLE_AUTO_OPTIONS_SELENIUM:
@@ -202,19 +254,9 @@ def init_driver() -> webdriver:
             '''
             })
 
-        if USE_SELENIUM_STEALTH:
-            # надстройка selenium-stealth, предназначенная для скрытия следов автоматизации
-            stealth(driver=driver,
-                user_agent=fake_user_agent,
-                languages=["ru-RU", "ru"],
-                vendor="Google Inc.",
-                platform="Win32",
-                webgl_vendor="Intel Inc.",
-                renderer="Intel Iris OpenGL Engine",
-                fix_hairline=True,
-                run_on_insecure_origins=True,
-                )
-        
+        driver.set_page_load_timeout(30)
+        # driver.maximize_window()
+
         return driver
     except Exception as exc:
         logger.error(f'Ошибка при инициализации драйвера {exc}')
